@@ -10,14 +10,99 @@
 
 ## 設計
 
-### 登場人物
+### Entity
 
-- ビー玉
-- 天板
-- 壁
-- アイテム ? (できたら)
-- 敵 ? (できたら)
+- Marble (ビー玉)
+- Actor (メインビー玉)
+- Board (天板)
+- Tile (壁・地面のタイル)
+- Camera (カメラ)
+- Start (スタート)
+- Goal (ゴール)
+- Item (アイテム) ? (できたら)
+- Enemy (敵) ? (できたら)
 
-### コンポーネント
+### Compponent (コンポーネント)
+
+オブジェクト描画用コンポーネント
+
+- ObjectView コンポーネント  
+    対象 Entity: Marble, Actor, Board, Camera, (Item, Enemy)
+
+位置情報などのコンポーネント
+
+- Acceleration (加速度) コンポーネント  
+    対象 Entity: Marble, Actor, Board, Camera, (Item, Enemy)
+- Velocity (速度) コンポーネント  
+    対象 Entity: Marble, Actor, Board, Camera, (Item, Enemy)
+- Position (位置) コンポーネント  
+    対象 Entity: Marble, Actor, Board, Tile, Camera, (Item, Enemy)
+
+衝突用のコンポーネント
+
+衝突や接触を意味する
+
+- Collision (衝突) コンポーネント
+    対象 Entity: Marble, Actor, Board, Tile, (Item, Enemy)
+
+
+天板用のコンポーネント
+
+- Normal Vector (法線ベクトル) コンポーネント  
+    対象 Entity: Board, Tile
+
+カメラ用のコンポーネント
+
+- LookAt (目線) コンポーネント  
+    対象 Entity: Camera
+
+Entity 用のコンポーネント
+
+- Marble コンポーネント  
+    対象 Entity: Marble
+- Actor コンポーネント  
+    対象 Entity: Actor
+- Board コンポーネント  
+    対象 Entity: Board
+- Tile コンポーネント  
+    対象 Entity: Tile 
+- Camera コンポーネント  
+    対象 Entity: Camera
+- Start コンポーネント  
+    対象 Entity: Start
+- Goal コンポーネント  
+    対象 Entity: Goal
+- Item コンポーネント  
+    対象 Entity: Item
+- Enemy コンポーネント  
+    対象 Entity: Enemy
+
+入力用 コンポーネント
+
+- Input コンポーネント  
+    対象 Entity: Board, Camera
+
+音用 コンポーネント
+
+- Audio コンポーネント
+    対象 Entity: Todo!()
 
 ### システム
+
+Acceleration・Velocity を変更するシステム
+
+- Input (コンポーネント) の情報をもとに，対象 Entity のコンポーネント (Board, Camera) がもっている Acceleration・Velocity (コンポーネント) を変更するシステム
+
+Velocity・Position を変更するシステム
+
+- Acceleration から Velocity を変更するシステム
+- Velocity から Position を変更するシステム
+
+Position が決まったときに起こるシステム
+- Position から Collision を変更するシステム
+- Position から ObjectView を変更するシステム
+
+Collision が決まったときに起こるシステム
+
+- Collision から，Acceleration・Velocity を変更するシステム
+- Collision から，Audio を変更するシステム

@@ -17,6 +17,7 @@ fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    asset_server: Res<AssetServer>,
 ) {
     // ui camera
     commands.spawn_bundle(UiCameraBundle::default());
@@ -86,6 +87,39 @@ fn setup(
                 ..default()
             },
             transform: light_position.into(),
+            ..default()
+        });
+    
+    commands.spawn()
+        .insert_bundle(ImageBundle {
+            style: Style {
+                size: Size::new(Val::Px(150.0), Val::Px(150.0)),
+                position_type: PositionType::Absolute,
+                position: Rect {
+                    right: Val::Px(50.0),
+                    bottom: Val::Px(50.0),
+                    ..default()
+                },
+                ..default()
+            },
+            image: asset_server.load("image/mouse_controller_base.png").into(),
+            ..default()
+        });
+
+
+    commands.spawn()
+        .insert_bundle(ImageBundle {
+            style: Style {
+                size: Size::new(Val::Px(100.0), Val::Px(100.0)),
+                position_type: PositionType::Absolute,
+                position: Rect {
+                    right: Val::Px(50.0),
+                    bottom: Val::Px(50.0),
+                    ..default()
+                },
+                ..default()
+            },
+            image: asset_server.load("image/mouse_controller_main.png").into(),
             ..default()
         });
 }

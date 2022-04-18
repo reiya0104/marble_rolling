@@ -1,0 +1,7 @@
+<svg width="480" height="480"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink">
+
+    <circle cx="240" cy="240" r="225" stroke="#404040" fill="gray" stroke-width="30"/>
+    <circle cx="240" cy="240" r="150" stroke="#404040" fill="gray" stroke-width="20"/>
+</svg>

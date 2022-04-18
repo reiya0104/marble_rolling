@@ -16,9 +16,11 @@
 - Actor (メインビー玉)
 - Board (天板)
 - Tile (壁・地面のタイル)
+- Light (光)
 - Camera (カメラ)
 - Start (スタート)
 - Goal (ゴール)
+- MouseController (コントローラ)
 - Item (アイテム) ? (できたら)
 - Enemy (敵) ? (できたら)
 
@@ -27,7 +29,7 @@
 オブジェクト描画用コンポーネント
 
 - ObjectView コンポーネント  
-    対象 Entity: Marble, Actor, Board, Camera, (Item, Enemy)
+    対象 Entity: Marble, Actor, Board, Tile, Light, Camera, MouseController, (Item, Enemy)
 
 位置情報などのコンポーネント
 
@@ -36,7 +38,7 @@
 - Velocity (速度) コンポーネント  
     対象 Entity: Marble, Actor, Board, Camera, (Item, Enemy)
 - Position (位置) コンポーネント  
-    対象 Entity: Marble, Actor, Board, Tile, Camera, (Item, Enemy)
+    対象 Entity: Marble, Actor, Board, Tile, Light, Camera, MouseController, (Item, Enemy)
 
 衝突用のコンポーネント
 
@@ -66,32 +68,36 @@ Entity 用のコンポーネント
     対象 Entity: Board
 - Tile コンポーネント  
     対象 Entity: Tile 
+- Light コンポーネント
+    対象 Entity: Light
 - Camera コンポーネント  
     対象 Entity: Camera
 - Start コンポーネント  
     対象 Entity: Start
 - Goal コンポーネント  
     対象 Entity: Goal
+- MouseController コンポーネント  
+    対象 Entity: MouseController
 - Item コンポーネント  
     対象 Entity: Item
 - Enemy コンポーネント  
     対象 Entity: Enemy
-
-入力用 コンポーネント
-
-- Input コンポーネント  
-    対象 Entity: Board, Camera
 
 音用 コンポーネント
 
 - Audio コンポーネント
     対象 Entity: Todo!()
 
+### リソース
+
+- Input リソース  
+    対象 Entity: Camera, MouseController
+
 ### システム
 
-Acceleration・Velocity を変更するシステム
+Input に関するシステム
 
-- Input (コンポーネント) の情報をもとに，対象 Entity のコンポーネント (Board, Camera) がもっている Acceleration・Velocity (コンポーネント) を変更するシステム
+- Input (リソース) の情報をもとに，対象 Entity のコンポーネント (Camera, MouseController) がもっている Velocity・Position (コンポーネント) を変更するシステム
 
 Velocity・Position を変更するシステム
 

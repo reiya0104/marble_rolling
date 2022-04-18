@@ -1,4 +1,4 @@
-use bevy::prelude::Component;
+use bevy::prelude::*;
 
 // オブジェクト描画用コンポーネント
 #[derive(Debug, Component)]
@@ -11,8 +11,16 @@ struct Acceleration;
 #[derive(Debug, Component)]
 struct Velocity;
 
-#[derive(Debug, Component)]
-struct Position;
+#[derive(Debug, Default, Clone, Component)]
+pub(crate) struct Position {
+    pub(crate) vec3: Vec3,
+}
+
+impl From<Position> for Transform {
+    fn from(position: Position) -> Self {
+        Transform::from_xyz(position.vec3.x, position.vec3.y, position.vec3.z)
+    }
+}
 
 // 衝突用のコンポーネント
 #[derive(Debug, Component)]
@@ -31,7 +39,7 @@ struct Audio;
 
 // Entity 用コンポーネント
 #[derive(Debug, Component)]
-struct Marble;
+pub(crate) struct Marble;
 
 #[derive(Debug, Component)]
 struct Actor;
@@ -43,7 +51,7 @@ struct Board;
 struct Tile;
 
 #[derive(Debug, Component)]
-struct Camera;
+pub(crate) struct Camera;
 
 #[derive(Debug, Component)]
 struct Start;

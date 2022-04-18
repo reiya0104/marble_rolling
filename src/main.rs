@@ -1,5 +1,7 @@
 pub mod component;
 
+use std::f32::consts::PI;
+
 use bevy::{prelude::*, DefaultPlugins};
 use component::*;
 
@@ -17,9 +19,8 @@ fn setup(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     // camera
-    let camera_position = Position {
-        vec3: Vec3::new(0.0, 0.0, 5.0),
-    };
+    let camera_position = Position::new(0.0, 0.0, 10.0);
+
     commands
         .spawn()
         .insert(Camera)
@@ -29,8 +30,30 @@ fn setup(
             ..default()
         });
 
+    // board
+    let pi = PI;
+    let rotation = Quat::from_axis_angle(Vec3::new(-1.0, 0.0, 1.0).normalize(), - pi / 4.0);
+    let board_position = Position::default();
+    commands
+        .spawn()
+        .insert(board_position.clone())
+        .insert(Board)
+        .insert_bundle(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Plane {
+                size: 5.0,
+                ..default()
+            })),
+            material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
+            transform: Transform {
+                translation: board_position.vec3,
+                rotation: rotation.clone(),
+                scale: Vec3::ONE,
+            },
+            ..default()
+        });
+
     // marble
-    let marble_position = Position::default();
+    let marble_position = Position::new(0.0, 2.0, 0.0);
     commands
         .spawn()
         .insert(Marble)
@@ -49,9 +72,7 @@ fn setup(
         });
 
     // light
-    let light_position = Position {
-        vec3: Vec3::new(3.0, 5.0, 3.0),
-    };
+    let light_position = Position::new(3.0, 5.0, 3.0);
     commands
         .spawn()
         .insert(light_position.clone())

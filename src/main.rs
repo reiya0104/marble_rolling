@@ -18,9 +18,11 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    // camera
-    let camera_position = Position::new(0.0, 0.0, 10.0);
+    // ui camera
+    commands.spawn_bundle(UiCameraBundle::default());
 
+    // 3D camera
+    let camera_position = Position::new(0.0, 0.0, 10.0);
     commands
         .spawn()
         .insert(Camera)
@@ -32,7 +34,7 @@ fn setup(
 
     // board
     let pi = PI;
-    let rotation = Quat::from_axis_angle(Vec3::new(-1.0, 0.0, 1.0).normalize(), - pi / 4.0);
+    let rotation = Quat::from_axis_angle(Vec3::new(-1.0, 0.0, 1.0).normalize(), -pi / 4.0);
     let board_position = Position::default();
     commands
         .spawn()

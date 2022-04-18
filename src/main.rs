@@ -1,8 +1,9 @@
 pub mod component;
+pub mod fps_text;
 
 use std::f32::consts::PI;
 
-use bevy::{prelude::*, DefaultPlugins};
+use bevy::{prelude::*, DefaultPlugins, diagnostic::FrameTimeDiagnosticsPlugin};
 use component::*;
 
 const GRAVITY: f32 = 9.80665;
@@ -10,7 +11,11 @@ const GRAVITY: f32 = 9.80665;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
+        .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_startup_system(setup)
+        // fps_text
+        .add_startup_system(fps_text::setup_fps_text)
+        .add_system(fps_text::text_update_system)
         // .add_system(debug_position)
         .add_system(update_velocity_by_acceleration.label("update_velocity_by_acceleration"))
         .add_system(
@@ -151,22 +156,37 @@ fn setup(
         },
         image: asset_server.load("image/mouse_controller_base.png").into(),
         ..default()
-    });
-
-    commands.spawn().insert_bundle(ImageBundle {
-        style: Style {
-            size: Size::new(Val::Px(100.0), Val::Px(100.0)),
-            position_type: PositionType::Absolute,
-            position: Rect {
-                right: Val::Px(50.0),
-                bottom: Val::Px(50.0),
+    }).with_children(|parent| {
+        parent.spawn_bundle(ImageBundle {
+            style: Style {
+                size: Size::new(Val::Px(100.0), Val::Px(100.0)),
+                position_type: PositionType::Absolute,
+                position: Rect {
+                    right: Val::Px(0.0),
+                    bottom: Val::Px(0.0),
+                    ..default()
+                },
                 ..default()
             },
+            image: asset_server.load("image/mouse_controller_main.png").into(),
             ..default()
-        },
-        image: asset_server.load("image/mouse_controller_main.png").into(),
-        ..default()
+        });
     });
+
+    // commands.spawn().insert_bundle(ImageBundle {
+    //     style: Style {
+    //         size: Size::new(Val::Px(100.0), Val::Px(100.0)),
+    //         position_type: PositionType::Absolute,
+    //         position: Rect {
+    //             right: Val::Px(50.0),
+    //             bottom: Val::Px(50.0),
+    //             ..default()
+    //         },
+    //         ..default()
+    //     },
+    //     image: asset_server.load("image/mouse_controller_main.png").into(),
+    //     ..default()
+    // });
 }
 
 fn debug_position(query: Query<(&Position, Entity)>) {

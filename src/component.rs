@@ -16,6 +16,14 @@ pub(crate) struct Position {
     pub(crate) vec3: Vec3,
 }
 
+impl Position {
+    pub(crate) fn new(x: f32, y: f32, z: f32) -> Self {
+        Self {
+            vec3: Vec3::new(x, y, z)
+        }
+    }
+}
+
 impl From<Position> for Transform {
     fn from(position: Position) -> Self {
         Transform::from_xyz(position.vec3.x, position.vec3.y, position.vec3.z)
@@ -45,7 +53,7 @@ pub(crate) struct Marble;
 struct Actor;
 
 #[derive(Debug, Component)]
-struct Board;
+pub(crate) struct Board;
 
 #[derive(Debug, Component)]
 struct Tile;

@@ -19,7 +19,7 @@ pub(crate) struct Position {
 impl Position {
     pub(crate) fn new(x: f32, y: f32, z: f32) -> Self {
         Self {
-            vec3: Vec3::new(x, y, z)
+            vec3: Vec3::new(x, y, z),
         }
     }
 }
@@ -69,6 +69,9 @@ struct Start;
 
 #[derive(Debug, Component)]
 struct Goal;
+
+#[derive(Debug, Component)]
+pub(crate) struct MouseController;
 
 #[derive(Debug, Component)]
 struct Item;

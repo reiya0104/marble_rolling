@@ -16,6 +16,7 @@
 - Actor (メインビー玉)
 - Board (天板)
 - Tile (壁・地面のタイル)
+- Light (光)
 - Camera (カメラ)
 - Start (スタート)
 - Goal (ゴール)
@@ -27,7 +28,7 @@
 オブジェクト描画用コンポーネント
 
 - ObjectView コンポーネント  
-    対象 Entity: Marble, Actor, Board, Camera, (Item, Enemy)
+    対象 Entity: Marble, Actor, Board, Tile, Light, Camera, (Item, Enemy)
 
 位置情報などのコンポーネント
 
@@ -36,7 +37,7 @@
 - Velocity (速度) コンポーネント  
     対象 Entity: Marble, Actor, Board, Camera, (Item, Enemy)
 - Position (位置) コンポーネント  
-    対象 Entity: Marble, Actor, Board, Tile, Camera, (Item, Enemy)
+    対象 Entity: Marble, Actor, Board, Tile, Light, Camera, (Item, Enemy)
 
 衝突用のコンポーネント
 
@@ -66,6 +67,8 @@ Entity 用のコンポーネント
     対象 Entity: Board
 - Tile コンポーネント  
     対象 Entity: Tile 
+- Light コンポーネント
+    対象 Entity: Light
 - Camera コンポーネント  
     対象 Entity: Camera
 - Start コンポーネント  

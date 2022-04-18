@@ -47,6 +47,24 @@ fn setup(
             transform: marble_position.into(),
             ..default()
         });
+
+    // light
+    let light_position = Position {
+        vec3: Vec3::new(3.0, 5.0, 3.0),
+    };
+    commands
+        .spawn()
+        .insert(light_position.clone())
+        .insert(Light)
+        .insert_bundle(PointLightBundle {
+            point_light: PointLight {
+                intensity: 1500.0,
+                shadows_enabled: true,
+                ..default()
+            },
+            transform: light_position.into(),
+            ..default()
+        });
 }
 
 fn debug_position(query: Query<(&Position, Entity)>) {

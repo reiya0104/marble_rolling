@@ -51,6 +51,9 @@ struct Board;
 struct Tile;
 
 #[derive(Debug, Component)]
+pub(crate) struct Light;
+
+#[derive(Debug, Component)]
 pub(crate) struct Camera;
 
 #[derive(Debug, Component)]

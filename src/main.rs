@@ -1,10 +1,14 @@
-pub mod component;
-pub mod fps_text;
+mod component;
+mod consts;
+mod fps_text;
+mod ui;
 
 use std::f32::consts::PI;
 
-use bevy::{prelude::*, DefaultPlugins, diagnostic::FrameTimeDiagnosticsPlugin};
+use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*, DefaultPlugins};
+
 use component::*;
+use ui::components::*;
 
 const GRAVITY: f32 = 9.80665;
 
@@ -13,6 +17,8 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_startup_system(setup)
+        // ui
+        .add_startup_system(ui::systems::setup_ui)
         // fps_text
         .add_startup_system(fps_text::setup_fps_text)
         .add_system(fps_text::text_update_system)
@@ -34,6 +40,20 @@ fn main() {
                 .after("update_object_view_by_position"),
         )
         .add_system(create_marble)
+        .add_system(
+            ui::systems::update_mouse_coltroller_main_position
+                .label("update_mouse_coltroller_main_position"),
+        )
+        .add_system(
+            ui::systems::update_ui_view_by_main_position
+                .label("update_ui_view_by_main_position")
+                .after("update_mouse_coltroller_main_position"),
+        )
+        .add_system(
+            ui::systems::update_ui_style
+                .label("update_ui_style")
+                .after("update_ui_view_by_main_position"),
+        )
         .run();
 }
 
@@ -142,51 +162,6 @@ fn setup(
             transform: light_position.into(),
             ..default()
         });
-
-    commands.spawn().insert_bundle(ImageBundle {
-        style: Style {
-            size: Size::new(Val::Px(150.0), Val::Px(150.0)),
-            position_type: PositionType::Absolute,
-            position: Rect {
-                right: Val::Px(50.0),
-                bottom: Val::Px(50.0),
-                ..default()
-            },
-            ..default()
-        },
-        image: asset_server.load("image/mouse_controller_base.png").into(),
-        ..default()
-    }).with_children(|parent| {
-        parent.spawn_bundle(ImageBundle {
-            style: Style {
-                size: Size::new(Val::Px(100.0), Val::Px(100.0)),
-                position_type: PositionType::Absolute,
-                position: Rect {
-                    right: Val::Px(0.0),
-                    bottom: Val::Px(0.0),
-                    ..default()
-                },
-                ..default()
-            },
-            image: asset_server.load("image/mouse_controller_main.png").into(),
-            ..default()
-        });
-    });
-
-    // commands.spawn().insert_bundle(ImageBundle {
-    //     style: Style {
-    //         size: Size::new(Val::Px(100.0), Val::Px(100.0)),
-    //         position_type: PositionType::Absolute,
-    //         position: Rect {
-    //             right: Val::Px(50.0),
-    //             bottom: Val::Px(50.0),
-    //             ..default()
-    //         },
-    //         ..default()
-    //     },
-    //     image: asset_server.load("image/mouse_controller_main.png").into(),
-    //     ..default()
-    // });
 }
 
 fn debug_position(query: Query<(&Position, Entity)>) {

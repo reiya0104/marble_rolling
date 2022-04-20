@@ -7,11 +7,11 @@ pub(crate) struct UIView {
 }
 
 impl UIView {
-    pub(crate) fn new(position_vec2: Vec2) -> Self {
-        Self {
-            position: position_vec2,
-        }
-    }
+    // pub(crate) fn new(position_vec2: Vec2) -> Self {
+    //     Self {
+    //         position: position_vec2,
+    //     }
+    // }
 
     pub(crate) fn from_ui_position(ui_position: UIPosition) -> Self {
         Self {

@@ -3,21 +3,17 @@ use bevy::prelude::*;
 
 pub(crate) fn setup_ui(
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
+    // mut meshes: ResMut<Assets<Mesh>>,
+    // mut materials: ResMut<Assets<StandardMaterial>>,
     asset_server: Res<AssetServer>,
 ) {
     // base
     let base_size = UISquareSize { size: 150.0 };
-    let base_position = UIPosition {
-        vec2: Vec2::new(50.0, 50.0),
-    };
+    let base_position = UIPosition::new(50.0, 50.0);
 
     // main
     let main_size = UISquareSize { size: 100.0 };
-    let main_position = UIPosition {
-        vec2: Vec2::new(0.0, 0.0),
-    };
+    let main_position = UIPosition::default();
 
     // mouse controller
     commands
@@ -31,7 +27,6 @@ pub(crate) fn setup_ui(
                 size: base_size.into(),
                 position_type: PositionType::Absolute,
                 position: base_position.into(),
-                // position: Rect(Val::Px(10.0), Val::Px(0.0)),
                 ..default()
             },
             image: asset_server.load("image/mouse_controller_base.png").into(),
@@ -83,7 +78,7 @@ pub(crate) fn update_mouse_coltroller_main_position(
         if let Some(window) = windows.iter().last() {
             let iter = query_base.iter().zip(query_main.iter_mut());
 
-            if let Some(((base_position, base_size), (mut main_position, main_size))) = iter.last()
+            if let Some(((base_position, base_size), (mut main_position, _))) = iter.last()
             {
                 let base_center = Vec2::splat(base_size.size) / 2.0 + base_position.vec2;
 

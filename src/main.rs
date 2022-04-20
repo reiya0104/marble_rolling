@@ -1,5 +1,4 @@
 mod component;
-mod consts;
 mod fps_text;
 mod ui;
 

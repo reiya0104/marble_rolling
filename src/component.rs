@@ -107,9 +107,6 @@ struct Start;
 struct Goal;
 
 #[derive(Debug, Component)]
-pub(crate) struct MouseController;
-
-#[derive(Debug, Component)]
 struct Item;
 
 #[derive(Debug, Component)]

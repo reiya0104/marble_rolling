@@ -80,18 +80,22 @@ pub(crate) fn update_mouse_coltroller_main_position(
         if let Some(window) = windows.iter().last() {
             let iter = query_base.iter().zip(query_main.iter_mut());
 
-            if let Some(((base_position, base_size), (mut main_position, _, max_controller_radius))) = iter.last()
+            if let Some((
+                (base_position, base_size),
+                (mut main_position, _, max_controller_radius),
+            )) = iter.last()
             {
                 let base_center = Vec2::splat(base_size.size) / 2.0 + base_position.vec2;
 
                 let cursor_position_relative =
                     Vec2::new(window.width() - cursor_position.x, cursor_position.y) - base_center;
 
-                main_position.vec2 = if cursor_position_relative.length() > max_controller_radius.size {
-                    max_controller_radius.size * cursor_position_relative.normalize()
-                } else {
-                    cursor_position_relative
-                };
+                main_position.vec2 =
+                    if cursor_position_relative.length() > max_controller_radius.size {
+                        max_controller_radius.size * cursor_position_relative.normalize()
+                    } else {
+                        cursor_position_relative
+                    };
             }
         }
     }
@@ -111,7 +115,9 @@ pub(crate) fn update_ui_view_by_mouse_coltroller_main_position(
     }
 }
 
-pub(crate) fn update_ui_style_by_ui_view(mut query: Query<(&mut Style, &UIView), With<MouseControllerMain>>) {
+pub(crate) fn update_ui_style_by_ui_view(
+    mut query: Query<(&mut Style, &UIView), With<MouseControllerMain>>,
+) {
     for (mut style, ui_view) in query.iter_mut() {
         style.position = ui_view.clone().into();
     }

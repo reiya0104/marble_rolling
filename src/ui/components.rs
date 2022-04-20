@@ -71,9 +71,7 @@ pub(crate) struct UIMaxSize {
 
 impl UIMaxSize {
     pub(crate) fn new(size: f32) -> Self {
-        Self {
-            size,
-        }
+        Self { size }
     }
 }
 

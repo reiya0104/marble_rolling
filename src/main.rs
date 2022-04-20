@@ -21,7 +21,8 @@ fn main() {
         // fps_text
         .add_startup_system(fps_text::setup_fps_text)
         .add_system(fps_text::text_update_system)
-        // .add_system(debug_position)
+        // debug position
+        .add_system(debug_position)
         .add_system(update_velocity_by_acceleration.label("update_velocity_by_acceleration"))
         .add_system(
             update_position_by_velocity
@@ -66,7 +67,7 @@ fn setup(
     commands.spawn_bundle(UiCameraBundle::default());
 
     // 3D camera
-    let camera_position = Position::new(0.0, 0.0, 10.0);
+    let camera_position = Position::new(0.0, 1.0, 10.0);
     commands
         .spawn()
         .insert(Camera)
@@ -79,6 +80,7 @@ fn setup(
     // board
     let pi = PI;
     let rotation = Quat::from_axis_angle(Vec3::new(-1.0, 0.0, 1.0).normalize(), -pi / 4.0);
+    let rotation = Quat::IDENTITY;
     let board_position = Position::default();
     commands
         .spawn()
@@ -95,6 +97,42 @@ fn setup(
                 rotation: rotation.clone(),
                 scale: Vec3::ONE,
             },
+            ..default()
+        });
+
+    // normal vector
+    let mut normal_vector_position = Position::new(0.0, 1.0, 0.0);
+    let transform = &mut Transform::from_translation(normal_vector_position.vec3);
+    transform.rotate_around(Vec3::ZERO, rotation.clone());
+    normal_vector_position = Position::from_vec3(transform.translation);
+
+    commands
+        .spawn()
+        .insert(NormalVector)
+        .insert(Acceleration::default())
+        .insert(Velocity::default())
+        .insert(normal_vector_position.clone())
+        // .insert(new_position.clone())
+        .insert(ObjectView::from_position(normal_vector_position.clone()))
+        .insert_bundle(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::UVSphere {
+                radius: 0.05,
+                ..default()
+            })),
+            material: materials.add(StandardMaterial {
+                base_color: Color::PINK,
+                ..default()
+            }),
+            transform: *transform,
+            // Transform::rotate_around(transform, Vec3::ZERO, rotation.clone()),
+            // Transform {
+            //     translation: normal_vector_position.vec3,
+            //     // rotation: rotation.clone(),
+            //     rotation: Quat::from_rotation_x(pi / 4.0),
+            //     scale: Vec3::ONE,
+            // },
+
+            // .looking_at(Vec3::ZERO, Vec3::Y),
             ..default()
         });
 
@@ -163,7 +201,7 @@ fn setup(
         });
 }
 
-fn debug_position(query: Query<(&Position, Entity)>) {
+fn debug_position(query: Query<(&Position, Entity), With<NormalVector>>) {
     for (position, entity) in query.iter() {
         println!("{:?}, {:?}", position, entity);
     }

@@ -58,6 +58,10 @@ impl Position {
             vec3: Vec3::new(x, y, z),
         }
     }
+
+    pub(crate) fn from_vec3(vec3: Vec3) -> Self {
+        Self { vec3 }
+    }
 }
 
 impl From<Position> for Transform {
@@ -72,7 +76,7 @@ struct Collision;
 
 // 天板用のコンポーネント
 #[derive(Debug, Component)]
-struct NormalVector;
+pub(crate) struct NormalVector;
 
 // カメラ用のコンポーネン
 #[derive(Debug, Component)]

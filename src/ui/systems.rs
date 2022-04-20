@@ -14,6 +14,7 @@ pub(crate) fn setup_ui(
     // main
     let main_size = UISquareSize { size: 100.0 };
     let main_position = UIPosition::default();
+    let main_max_radius = UIMaxSize::new(45.0);
 
     // mouse controller
     commands
@@ -39,6 +40,7 @@ pub(crate) fn setup_ui(
                 .spawn()
                 .insert(main_size.clone())
                 .insert(main_position.clone())
+                .insert(main_max_radius)
                 .insert(UIView::from_ui_position(main_position.clone()))
                 .insert_bundle(ImageBundle {
                     style: Style {
@@ -62,13 +64,13 @@ pub(crate) fn update_mouse_coltroller_main_position(
         (With<MouseControllerBase>, Without<MouseControllerMain>),
     >,
     mut query_main: Query<
-        (&mut UIPosition, &UISquareSize),
+        (&mut UIPosition, &UISquareSize, &UIMaxSize),
         (With<MouseControllerMain>, Without<MouseControllerBase>),
     >,
 ) {
     // カーソルの位置にあった main_position に更新する
 
-    let max_controller_radius = 45.0;
+    // let max_controller_radius = 45.0;
 
     for event in cursor_moved_events.iter() {
         // カーソルの位置を取得
@@ -78,15 +80,15 @@ pub(crate) fn update_mouse_coltroller_main_position(
         if let Some(window) = windows.iter().last() {
             let iter = query_base.iter().zip(query_main.iter_mut());
 
-            if let Some(((base_position, base_size), (mut main_position, _))) = iter.last()
+            if let Some(((base_position, base_size), (mut main_position, _, max_controller_radius))) = iter.last()
             {
                 let base_center = Vec2::splat(base_size.size) / 2.0 + base_position.vec2;
 
                 let cursor_position_relative =
                     Vec2::new(window.width() - cursor_position.x, cursor_position.y) - base_center;
 
-                main_position.vec2 = if cursor_position_relative.length() > max_controller_radius {
-                    max_controller_radius * cursor_position_relative.normalize()
+                main_position.vec2 = if cursor_position_relative.length() > max_controller_radius.size {
+                    max_controller_radius.size * cursor_position_relative.normalize()
                 } else {
                     cursor_position_relative
                 };

@@ -64,6 +64,19 @@ impl From<UISquareSize> for Size<Val> {
     }
 }
 
+#[derive(Debug, Default, Clone, Component)]
+pub(crate) struct UIMaxSize {
+    pub(crate) size: f32,
+}
+
+impl UIMaxSize {
+    pub(crate) fn new(size: f32) -> Self {
+        Self {
+            size,
+        }
+    }
+}
+
 #[derive(Component)]
 pub(crate) struct MouseControllerBase;
 

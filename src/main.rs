@@ -44,14 +44,14 @@ fn main() {
                 .label("update_mouse_coltroller_main_position"),
         )
         .add_system(
-            ui::systems::update_ui_view_by_main_position
-                .label("update_ui_view_by_main_position")
+            ui::systems::update_ui_view_by_mouse_coltroller_main_position
+                .label("update_ui_view_by_mouse_coltroller_main_position")
                 .after("update_mouse_coltroller_main_position"),
         )
         .add_system(
-            ui::systems::update_ui_style
-                .label("update_ui_style")
-                .after("update_ui_view_by_main_position"),
+            ui::systems::update_ui_style_by_ui_view
+                .label("update_ui_style_by_ui_view")
+                .after("update_ui_view_by_mouse_coltroller_main_position"),
         )
         .run();
 }

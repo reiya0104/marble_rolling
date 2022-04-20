@@ -95,7 +95,7 @@ pub(crate) fn update_mouse_coltroller_main_position(
     }
 }
 
-pub(crate) fn update_ui_view_by_main_position(
+pub(crate) fn update_ui_view_by_mouse_coltroller_main_position(
     query_base: Query<&UISquareSize, (With<MouseControllerBase>, Without<MouseControllerMain>)>,
     query_main: Query<&UISquareSize, (With<MouseControllerMain>, Without<MouseControllerBase>)>,
     mut query: Query<(&mut UIView, &UIPosition), With<MouseControllerMain>>,
@@ -109,7 +109,7 @@ pub(crate) fn update_ui_view_by_main_position(
     }
 }
 
-pub(crate) fn update_ui_style(mut query: Query<(&mut Style, &UIView), With<MouseControllerMain>>) {
+pub(crate) fn update_ui_style_by_ui_view(mut query: Query<(&mut Style, &UIView), With<MouseControllerMain>>) {
     for (mut style, ui_view) in query.iter_mut() {
         style.position = ui_view.clone().into();
     }

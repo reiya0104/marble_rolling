@@ -21,6 +21,8 @@
 - Start (スタート)
 - Goal (ゴール)
 - MouseController (コントローラ)
+    - MouseControllerBase
+    - MouseControllerMain
 - Item (アイテム) ? (できたら)
 - Enemy (敵) ? (できたら)
 
@@ -38,7 +40,7 @@
 - Velocity (速度) コンポーネント  
     対象 Entity: Marble, Actor, Board, Camera, (Item, Enemy)
 - Position (位置) コンポーネント  
-    対象 Entity: Marble, Actor, Board, Tile, Light, Camera, MouseController, (Item, Enemy)
+    対象 Entity: Marble, Actor, Board, Tile, Light, Camera, MouseController(Base, Main), (Item, Enemy)
 
 衝突用のコンポーネント
 
@@ -76,8 +78,10 @@ Entity 用のコンポーネント
     対象 Entity: Start
 - Goal コンポーネント  
     対象 Entity: Goal
-- MouseController コンポーネント  
-    対象 Entity: MouseController
+- MouseControllerBase コンポーネント  
+    対象 Entity: MouseControllerBase
+- MouseControllerMain コンポーネント  
+    対象 Entity: MouseControllerMain
 - Item コンポーネント  
     対象 Entity: Item
 - Enemy コンポーネント  

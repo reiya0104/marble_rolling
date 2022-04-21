@@ -70,6 +70,23 @@ impl From<Position> for Transform {
     }
 }
 
+#[derive(Debug, Default, Clone, Component)]
+pub(crate) struct Rotation {
+    pub(crate) quat: Quat,
+}
+
+impl Rotation {
+    // pub(crate) fn new(x: f32, y: f32, z: f32) -> Self {
+    //     Self {
+    //         vec3: Vec3::new(x, y, z),
+    //     }
+    // }
+
+    pub(crate) fn from_quat(quat: Quat) -> Self {
+        Self { quat }
+    }
+}
+
 // 衝突用のコンポーネント
 #[derive(Debug, Component)]
 struct Collision;

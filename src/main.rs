@@ -1,17 +1,12 @@
 mod component;
-mod events;
 mod fps_text;
-mod resouces;
-mod systems;
 mod ui;
 
 use std::f32::consts::PI;
 
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*, DefaultPlugins};
-use rand::prelude::*;
 
 use component::*;
-use events::*;
 use ui::components::*;
 
 const GRAVITY: f32 = 9.80665;
@@ -20,27 +15,12 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
-        .insert_resource(resouces::MarbleCount { count: 0 })
-        .add_event::<MarbleCreatedEvent>()
-        .add_event::<CollisionEvent>()
         .add_startup_system(setup)
         // ui
         .add_startup_system(ui::systems::setup_ui)
         // fps_text
         .add_startup_system(fps_text::setup_fps_text)
         .add_system(fps_text::text_update_system)
-        // event
-        .add_system(systems::create_leg.label("create_leg"))
-        .add_system(
-            systems::update_legs
-                .label("update_legs")
-                .after("create_leg"),
-        )
-        .add_system(
-            systems::collision_board_and_marble
-                .label("collision_board_and_marble")
-                .after("update_legs"),
-        )
         // debug position
         // .add_system(debug_position)
         .add_system(update_velocity_by_acceleration.label("update_velocity_by_acceleration"))
@@ -119,7 +99,6 @@ fn setup(
         .spawn()
         .insert(board_position.clone())
         .insert(rotation.clone())
-        .insert(PreviousRotation::from_quat(Quat::NAN))
         .insert(Board)
         .insert_bundle(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Box::new(5.0, 0.1, 5.0))),
@@ -139,12 +118,14 @@ fn setup(
     transform.rotate_around(Vec3::ZERO, rotation.quat);
     normal_vector_position = Position::from_vec3(transform.translation);
 
-    let normal_vector = commands
+    commands
         .spawn()
         .insert(NormalVector::new(board))
         .insert(Acceleration::default())
         .insert(Velocity::default())
         .insert(normal_vector_position.clone())
+        // .insert(rotation.clone())
+        // .insert(PreviousRotation::from_quat(Quat::NAN))
         .insert(ObjectView::from_position(normal_vector_position.clone()))
         .insert_bundle(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::UVSphere {
@@ -157,11 +138,10 @@ fn setup(
             }),
             transform: *transform,
             ..default()
-        })
-        .id();
+        });
 
     // marble
-    let gravity = GRAVITY / 100.0;
+    let gravity = GRAVITY / 10.0;
     let marble_position = Position::new(0.0, 4.0, 0.0);
     let marble_acceleration = Acceleration::new(0.0, -gravity, 0.0);
     let marble_velocity = Velocity::default();
@@ -188,7 +168,7 @@ fn setup(
 
     // marble2
     let marble_position = Position::new(1.0, 5.0, 1.0);
-    let marble2 = commands
+    commands
         .spawn()
         .insert(Marble)
         .insert(marble_acceleration.clone())
@@ -205,26 +185,6 @@ fn setup(
                 ..default()
             }),
             transform: marble_position.clone().into(),
-            ..default()
-        })
-        .id();
-
-    // Perpendicular leg of marble 2
-    let position = Position::new(1.0, 0.0, 1.0);
-    commands
-        .spawn()
-        .insert(Leg::new(normal_vector, marble2))
-        .insert(position.clone())
-        .insert_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::UVSphere {
-                radius: 0.1,
-                ..default()
-            })),
-            material: materials.add(StandardMaterial {
-                base_color: Color::BLACK,
-                ..default()
-            }),
-            transform: position.into(),
             ..default()
         });
 
@@ -263,18 +223,11 @@ fn update_velocity_by_acceleration(
 
 fn update_position_by_velocity(
     time: Res<Time>,
-    mut commands: Commands,
     mut query: Query<(&mut Position, &Velocity, Entity)>,
 ) {
-    let min_altitude: f32 = -100.0;
     for (mut position, velocity, entity) in query.iter_mut() {
-        // println!("{:?}, {:?}, {:?}", position, velocity, entity);
+        println!("{:?}, {:?}, {:?}", position, velocity, entity);
         position.vec3 += time.delta_seconds() * velocity.vec3;
-
-        // 高度 (position.vec3.y) が min_altitude を下回ったら， entity を削除する
-        if position.vec3.y < min_altitude {
-            commands.entity(entity).despawn();
-        }
     }
 }
 
@@ -298,36 +251,14 @@ fn create_marble(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut event_writer: EventWriter<MarbleCreatedEvent>,
 ) {
     if input.pressed(KeyCode::Space) {
-        let max_position_num = 2.5;
-
-        // 乱数生成
-        let mut rng = rand::thread_rng();
-        let x_base: f32 = rng.gen();
-        // let y_base: f32 = rng.gen();
-        let z_base: f32 = rng.gen();
-
         // marbles
         let gravity = GRAVITY / 10.0;
-        let marble_position = Position::new(
-            if x_base < 0.5 {
-                -x_base * max_position_num * 2.0
-            } else {
-                (x_base - 0.5) * max_position_num * 2.0
-            },
-            4.0,
-            if z_base < 0.5 {
-                -z_base * max_position_num * 2.0
-            } else {
-                (z_base - 0.5) * max_position_num * 2.0
-            },
-        );
-        // let marble_position = Position::new(0.0, 4.0, 0.0);
+        let marble_position = Position::new(0.0, 4.0, 0.0);
         let marble_acceleration = Acceleration::new(0.0, -gravity, 0.0);
         let marble_velocity = Velocity::default();
-        let entity = commands
+        commands
             .spawn()
             .insert(Marble)
             .insert(marble_acceleration.clone())
@@ -336,21 +267,16 @@ fn create_marble(
             .insert(ObjectView::from_position(marble_position.clone()))
             .insert_bundle(PbrBundle {
                 mesh: meshes.add(Mesh::from(shape::UVSphere {
-                    radius: 0.1,
+                    radius: 0.5,
                     ..default()
                 })),
                 material: materials.add(StandardMaterial {
-                    base_color: Color::BLUE,
+                    base_color: Color::LIME_GREEN,
                     ..default()
                 }),
                 transform: marble_position.clone().into(),
                 ..default()
-            })
-            .id();
-        event_writer.send(MarbleCreatedEvent {
-            position: marble_position.vec3,
-            entity,
-        });
+            });
     }
 }
 
@@ -360,7 +286,9 @@ fn update_rotation(
     mut quat_rotation: Query<(&mut Rotation, &mut PreviousRotation)>,
 ) {
     for (main_position, max_radius) in query_main.iter() {
+        // println!("{:?}, {:?}", main_position, max_radius);
         let rotate_base_vec = Vec3::new(-main_position.vec2.y, 0.0, main_position.vec2.x);
+        // println!("{:?}", rotate_base_vec);
         let rotate = if rotate_base_vec != Vec3::ZERO {
             Quat::from_axis_angle(
                 rotate_base_vec.normalize(),

@@ -356,6 +356,7 @@ fn create_marble(
 
 fn update_rotation(
     query_main: Query<(&UIPosition, &UIMaxSize), With<MouseControllerMain>>,
+    time: Res<Time>,
     mut quat_rotation: Query<(&mut Rotation, &mut PreviousRotation)>,
 ) {
     for (main_position, max_radius) in query_main.iter() {
@@ -363,15 +364,27 @@ fn update_rotation(
         let rotate = if rotate_base_vec != Vec3::ZERO {
             Quat::from_axis_angle(
                 rotate_base_vec.normalize(),
-                PI / 4.0 * (rotate_base_vec.length() / max_radius.size),
+                PI / 4.0 * (rotate_base_vec.length() / max_radius.size) * time.delta_seconds(),
+                // PI / 4.0 * (rotate_base_vec.length() / max_radius.size),
             )
         } else {
             Quat::IDENTITY
         };
         for (mut rotation, mut pre_rotation) in quat_rotation.iter_mut() {
             pre_rotation.quat = rotation.quat;
-            rotation.quat = rotate;
-            // println!("pre: {:?}, new: {:?}", pre_rotation, rotation);
+
+            // next quat
+            let quat = (rotation.quat * rotate).normalize();
+            let (mut vec, angle) = quat.to_axis_angle();
+            vec.y = 0.0;
+            rotation.quat = if vec != Vec3::ZERO {
+                Quat::from_axis_angle(
+                    vec.normalize(),
+                    if angle < PI / 4.0 { angle } else { PI / 4.0 },
+                )
+            } else {
+                Quat::IDENTITY
+            };
         }
     }
 }
@@ -388,13 +401,12 @@ fn update_normal_vector_transform_by_rotation(
     query_board: Query<&Rotation, With<Board>>,
 ) {
     for (mut position, mut transform, normal_vector) in query.iter_mut() {
-
         if let Ok(rotation) = query_board.get(normal_vector.board_entity) {
             transform.translation = Vec3::new(0.0, 1.0, 0.0);
             transform.rotation = Quat::IDENTITY;
             transform.rotate_around(Vec3::ZERO, rotation.quat);
             position.vec3 = transform.translation;
             // println!("{:?}, {:?}, {:?}", position, transform, rotation);
-        }        
+        }
     }
 }

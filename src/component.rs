@@ -116,13 +116,13 @@ struct Collision;
 // 天板用のコンポーネント
 #[derive(Debug, Component)]
 pub(crate) struct NormalVector {
-    pub(crate) board_entity: Entity
+    pub(crate) board_entity: Entity,
 }
 
 impl NormalVector {
     pub(crate) fn new(entity: Entity) -> Self {
         Self {
-            board_entity: entity
+            board_entity: entity,
         }
     }
 }

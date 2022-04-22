@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    component::{Leg, Marble, NormalVector, Position, PreviousRotation, Rotation, Board},
+    component::{Board, Leg, Marble, NormalVector, Position, PreviousRotation, Rotation},
     events::{CollisionEvent, MarbleCreatedEvent},
     resouces::MarbleCount,
 };
@@ -35,7 +35,9 @@ pub(crate) fn update_legs(
     mut event_writer: EventWriter<CollisionEvent>,
 ) {
     for (leg, mut transform, mut leg_position, entity) in query_leg.iter_mut() {
-        if let Ok((normal_vector_position, normal_vector)) = query_normal_vector.get(leg.normal_vector_entity) {
+        if let Ok((normal_vector_position, normal_vector)) =
+            query_normal_vector.get(leg.normal_vector_entity)
+        {
             if let Ok(marble_position) = query_marble.get(leg.marble_entity) {
                 // println!(
                 //     "{:?}, normal_vector: {:?}, marble: {:?}",
@@ -43,11 +45,12 @@ pub(crate) fn update_legs(
                 // );
 
                 let distance = normal_vector_position.vec3.dot(marble_position.vec3);
-                let next_leg_position = marble_position.vec3 - distance * normal_vector_position.vec3;
+                let next_leg_position =
+                    marble_position.vec3 - distance * normal_vector_position.vec3;
                 if distance.abs() <= 0.05 + 0.25 {
                     event_writer.send(CollisionEvent {
                         position: next_leg_position,
-                        board_entity: normal_vector.board_entity
+                        board_entity: normal_vector.board_entity,
                     });
                 }
                 leg_position.vec3 = next_leg_position;
@@ -65,8 +68,9 @@ pub(crate) fn update_legs(
     }
 }
 
-pub(crate) fn collision_board_and_marble(mut event_reader: EventReader<CollisionEvent>,
-    query_board: Query<(&Rotation, &PreviousRotation), With<Board>>
+pub(crate) fn collision_board_and_marble(
+    mut event_reader: EventReader<CollisionEvent>,
+    query_board: Query<(&Rotation, &PreviousRotation), With<Board>>,
 ) {
     for e in event_reader.iter() {
         println!("collisioned!");
@@ -75,7 +79,11 @@ pub(crate) fn collision_board_and_marble(mut event_reader: EventReader<Collision
             let position_quat = Quat::from_vec4(e.position.extend(0.0));
             let pre_position = (quat * position_quat * quat.conjugate()).xyz();
             let velocity = e.position - pre_position;
-            println!("now_position: {:?}, pre_position: {:?}, velocity: {:?}", e.position, pre_position, velocity);
+            // println!(
+            //     "now_position: {:?}, pre_position: {:?}, velocity: {:?}, {:?}",
+            //     e.position, pre_position, velocity, velocity.length()
+            // );
+            println!("velocity: {:?}, {:?}", velocity, velocity.length());
         }
     }
 }

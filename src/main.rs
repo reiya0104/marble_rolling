@@ -1,12 +1,18 @@
 mod component;
 mod fps_text;
 mod ui;
+mod systems;
+mod events;
+mod resources;
 
 use std::f32::consts::PI;
 
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*, DefaultPlugins};
 
 use component::*;
+use events::*;
+use resources::*;
+use systems::*;
 use ui::components::*;
 
 const GRAVITY: f32 = 9.80665;
@@ -15,6 +21,9 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
+        .add_event::<MarbleCreatedEvent>()
+        .add_event::<CollisionEvent>()
+        .insert_resource(MarbleCount { count: 0 })
         .add_startup_system(setup)
         // ui
         .add_startup_system(ui::systems::setup_ui)
@@ -69,6 +78,14 @@ fn main() {
                 .label("update_normal_vector_transform_by_rotation")
                 .after("update_rotation"),
         )
+        // leg
+        .add_system(
+            create_leg.label("create_leg")
+        )
+        .add_system(
+            update_legs.label("update_legs")
+        )
+        .add_system(collision_board_and_marble.label("collision_board_and_marble").after("update_legs"))
         .run();
 }
 
@@ -100,6 +117,7 @@ fn setup(
         .insert(board_position.clone())
         .insert(rotation.clone())
         .insert(Board)
+        .insert(PreviousRotation::from_quat(Quat::NAN))
         .insert_bundle(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Box::new(5.0, 0.1, 5.0))),
             material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
@@ -118,14 +136,12 @@ fn setup(
     transform.rotate_around(Vec3::ZERO, rotation.quat);
     normal_vector_position = Position::from_vec3(transform.translation);
 
-    commands
+    let normal_vector = commands
         .spawn()
         .insert(NormalVector::new(board))
         .insert(Acceleration::default())
         .insert(Velocity::default())
         .insert(normal_vector_position.clone())
-        // .insert(rotation.clone())
-        // .insert(PreviousRotation::from_quat(Quat::NAN))
         .insert(ObjectView::from_position(normal_vector_position.clone()))
         .insert_bundle(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::UVSphere {
@@ -138,7 +154,8 @@ fn setup(
             }),
             transform: *transform,
             ..default()
-        });
+        })
+        .id();
 
     // marble
     let gravity = GRAVITY / 10.0;
@@ -168,7 +185,7 @@ fn setup(
 
     // marble2
     let marble_position = Position::new(1.0, 5.0, 1.0);
-    commands
+    let marble2 = commands
         .spawn()
         .insert(Marble)
         .insert(marble_acceleration.clone())
@@ -185,6 +202,30 @@ fn setup(
                 ..default()
             }),
             transform: marble_position.clone().into(),
+            ..default()
+        })
+        .id();
+
+    // Leg
+    let leg_position = Position::new(1.0, 0.0, 1.0);
+    commands
+        .spawn()
+        .insert(Leg::new(
+            leg_position.vec3,
+            marble2,
+            normal_vector,
+        ))
+        .insert(leg_position.clone())
+        .insert_bundle(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::UVSphere {
+                radius: 0.1,
+                ..default()
+            })),
+            material: materials.add(StandardMaterial {
+                base_color: Color::BLACK,
+                ..default()
+            }),
+            transform: leg_position.into(),
             ..default()
         });
 
@@ -226,7 +267,7 @@ fn update_position_by_velocity(
     mut query: Query<(&mut Position, &Velocity, Entity)>,
 ) {
     for (mut position, velocity, entity) in query.iter_mut() {
-        println!("{:?}, {:?}, {:?}", position, velocity, entity);
+        // println!("{:?}, {:?}, {:?}", position, velocity, entity);
         position.vec3 += time.delta_seconds() * velocity.vec3;
     }
 }

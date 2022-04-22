@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
     component::{Board, Leg, Marble, NormalVector, Position, PreviousRotation, Rotation},
     events::{CollisionEvent, MarbleCreatedEvent},
-    resouces::MarbleCount,
+    resources::MarbleCount,
 };
 
 pub(crate) fn create_leg(

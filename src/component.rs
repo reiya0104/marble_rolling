@@ -98,6 +98,24 @@ impl Rotation {
     }
 }
 
+// 垂線の足
+#[derive(Debug, Component)]
+pub(crate) struct Leg {
+    pub(crate) position: Vec3,
+    pub(crate) marble_entity: Entity,
+    pub(crate) normal_vector_entity: Entity,
+}
+
+impl Leg {
+    pub(crate) fn new(position: Vec3, marble_entity: Entity, normal_vector_entity: Entity) -> Self {
+        Self {
+            position,
+            marble_entity,
+            normal_vector_entity,
+        }
+    }
+}
+
 // 衝突用のコンポーネント
 #[derive(Debug, Component)]
 struct Collision;

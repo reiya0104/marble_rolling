@@ -115,7 +115,7 @@ fn setup(
     // board
     let rotation = Rotation::default();
     let board_position = Position::default();
-    commands
+    let board = commands
         .spawn()
         .insert(board_position.clone())
         .insert(rotation.clone())
@@ -129,21 +129,23 @@ fn setup(
                 scale: Vec3::ONE,
             },
             ..default()
-        });
+        })
+        .id();
 
     // normal vector
     let mut normal_vector_position = Position::new(0.0, 1.0, 0.0);
     let transform = &mut Transform::from_translation(normal_vector_position.vec3);
-    transform.rotate_around(Vec3::ZERO, rotation.clone().quat);
+    transform.rotate_around(Vec3::ZERO, rotation.quat);
     normal_vector_position = Position::from_vec3(transform.translation);
 
     let normal_vector = commands
         .spawn()
-        .insert(NormalVector)
+        .insert(NormalVector::new(board))
         .insert(Acceleration::default())
         .insert(Velocity::default())
         .insert(normal_vector_position.clone())
-        .insert(rotation.clone())
+        // .insert(rotation.clone())
+        // .insert(PreviousRotation::from_quat(Quat::NAN))
         .insert(ObjectView::from_position(normal_vector_position.clone()))
         .insert_bundle(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::UVSphere {
@@ -378,18 +380,24 @@ fn update_rotation(
 fn update_board_transform_by_rotation(mut query: Query<(&mut Transform, &Rotation), With<Board>>) {
     for (mut transform, rotation) in query.iter_mut() {
         transform.rotation = rotation.quat;
-        // println!("{:?}, {:?}", transform, rotation);
+        // println!("board: {:?}, {:?}", transform, rotation);
     }
 }
 
 fn update_normal_vector_transform_by_rotation(
-    mut query: Query<(&mut Position, &mut Transform, &Rotation), With<NormalVector>>,
+    mut query: Query<(&mut Position, &mut Transform, &NormalVector)>,
+    query_board: Query<&Rotation, With<Board>>,
 ) {
-    for (mut position, mut transform, rotation) in query.iter_mut() {
-        transform.translation = Vec3::new(0.0, 1.0, 0.0);
-        transform.rotation = Quat::IDENTITY;
-        transform.rotate_around(Vec3::ZERO, rotation.quat);
-        position.vec3 = transform.translation;
-        println!("{:?}, {:?}, {:?}", position, transform, rotation);
+    for (mut position, mut transform, normal_vector) in query.iter_mut() {
+
+        if let Ok(rotation) = query_board.get(normal_vector.board_entity) {
+            transform.translation = Vec3::new(0.0, 1.0, 0.0);
+            transform.rotation = Quat::IDENTITY;
+            transform.rotate_around(Vec3::ZERO, rotation.quat);
+            position.vec3 = transform.translation;
+            println!("{:?}, {:?}, {:?}", position, transform, rotation);
+        }
+
+        
     }
 }

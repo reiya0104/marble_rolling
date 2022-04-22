@@ -115,8 +115,17 @@ struct Collision;
 
 // 天板用のコンポーネント
 #[derive(Debug, Component)]
-pub(crate) struct NormalVector;
+pub(crate) struct NormalVector {
+    pub(crate) board_entity: Entity
+}
 
+impl NormalVector {
+    pub(crate) fn new(entity: Entity) -> Self {
+        Self {
+            board_entity: entity
+        }
+    }
+}
 // カメラ用のコンポーネン
 #[derive(Debug, Component)]
 struct LookAt;

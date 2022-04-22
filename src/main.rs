@@ -29,7 +29,12 @@ fn main() {
         .add_startup_system(fps_text::setup_fps_text)
         .add_system(fps_text::text_update_system)
         // event
-        .add_system(systems::create_leg)
+        .add_system(systems::create_leg.label("create_leg"))
+        .add_system(
+            systems::update_legs
+                .label("update_legs")
+                .after("create_leg"),
+        )
         // debug position
         // .add_system(debug_position)
         .add_system(update_velocity_by_acceleration.label("update_velocity_by_acceleration"))
@@ -126,7 +131,7 @@ fn setup(
     transform.rotate_around(Vec3::ZERO, rotation.clone().quat);
     normal_vector_position = Position::from_vec3(transform.translation);
 
-    commands
+    let normal_vector = commands
         .spawn()
         .insert(NormalVector)
         .insert(Acceleration::default())
@@ -145,10 +150,11 @@ fn setup(
             }),
             transform: *transform,
             ..default()
-        });
+        })
+        .id();
 
     // marble
-    let gravity = GRAVITY / 10.0;
+    let gravity = GRAVITY / 100.0;
     let marble_position = Position::new(0.0, 4.0, 0.0);
     let marble_acceleration = Acceleration::new(0.0, -gravity, 0.0);
     let marble_velocity = Velocity::default();
@@ -175,7 +181,7 @@ fn setup(
 
     // marble2
     let marble_position = Position::new(1.0, 5.0, 1.0);
-    commands
+    let marble2 = commands
         .spawn()
         .insert(Marble)
         .insert(marble_acceleration.clone())
@@ -193,13 +199,14 @@ fn setup(
             }),
             transform: marble_position.clone().into(),
             ..default()
-        });
+        })
+        .id();
 
-    // Perpendicular legs
-    let position = Position::from_vec3(Vec3::ZERO);
+    // Perpendicular leg of marble 2
+    let position = Position::new(1.0, 0.0, 1.0);
     commands
         .spawn()
-        .insert(Leg)
+        .insert(Leg::new(normal_vector, marble2))
         .insert(position.clone())
         .insert_bundle(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::UVSphere {
@@ -254,7 +261,7 @@ fn update_position_by_velocity(
 ) {
     let min_altitude: f32 = -100.0;
     for (mut position, velocity, entity) in query.iter_mut() {
-        println!("{:?}, {:?}, {:?}", position, velocity, entity);
+        // println!("{:?}, {:?}, {:?}", position, velocity, entity);
         position.vec3 += time.delta_seconds() * velocity.vec3;
 
         // 高度 (position.vec3.y) が min_altitude を下回ったら， entity を削除する
@@ -313,7 +320,7 @@ fn create_marble(
         // let marble_position = Position::new(0.0, 4.0, 0.0);
         let marble_acceleration = Acceleration::new(0.0, -gravity, 0.0);
         let marble_velocity = Velocity::default();
-        commands
+        let entity = commands
             .spawn()
             .insert(Marble)
             .insert(marble_acceleration.clone())
@@ -331,8 +338,12 @@ fn create_marble(
                 }),
                 transform: marble_position.clone().into(),
                 ..default()
-            });
-        event_writer.send(MarbleCreatedEvent);
+            })
+            .id();
+        event_writer.send(MarbleCreatedEvent {
+            position: marble_position.vec3,
+            entity,
+        });
     }
 }
 

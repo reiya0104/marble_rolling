@@ -119,6 +119,7 @@ fn setup(
         .spawn()
         .insert(board_position.clone())
         .insert(rotation.clone())
+        .insert(PreviousRotation::from_quat(Quat::NAN))
         .insert(Board)
         .insert_bundle(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Box::new(5.0, 0.1, 5.0))),
@@ -144,8 +145,6 @@ fn setup(
         .insert(Acceleration::default())
         .insert(Velocity::default())
         .insert(normal_vector_position.clone())
-        // .insert(rotation.clone())
-        // .insert(PreviousRotation::from_quat(Quat::NAN))
         .insert(ObjectView::from_position(normal_vector_position.clone()))
         .insert_bundle(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::UVSphere {
@@ -357,12 +356,10 @@ fn create_marble(
 
 fn update_rotation(
     query_main: Query<(&UIPosition, &UIMaxSize), With<MouseControllerMain>>,
-    mut quat_rotation: Query<&mut Rotation>,
+    mut quat_rotation: Query<(&mut Rotation, &mut PreviousRotation)>,
 ) {
     for (main_position, max_radius) in query_main.iter() {
-        // println!("{:?}, {:?}", main_position, max_radius);
         let rotate_base_vec = Vec3::new(-main_position.vec2.y, 0.0, main_position.vec2.x);
-        // println!("{:?}", rotate_base_vec);
         let rotate = if rotate_base_vec != Vec3::ZERO {
             Quat::from_axis_angle(
                 rotate_base_vec.normalize(),
@@ -371,8 +368,10 @@ fn update_rotation(
         } else {
             Quat::IDENTITY
         };
-        for mut rotation in quat_rotation.iter_mut() {
+        for (mut rotation, mut pre_rotation) in quat_rotation.iter_mut() {
+            pre_rotation.quat = rotation.quat;
             rotation.quat = rotate;
+            // println!("pre: {:?}, new: {:?}", pre_rotation, rotation);
         }
     }
 }
@@ -395,9 +394,7 @@ fn update_normal_vector_transform_by_rotation(
             transform.rotation = Quat::IDENTITY;
             transform.rotate_around(Vec3::ZERO, rotation.quat);
             position.vec3 = transform.translation;
-            println!("{:?}, {:?}, {:?}", position, transform, rotation);
-        }
-
-        
+            // println!("{:?}, {:?}, {:?}", position, transform, rotation);
+        }        
     }
 }

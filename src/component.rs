@@ -71,6 +71,17 @@ impl From<Position> for Transform {
 }
 
 #[derive(Debug, Default, Clone, Component)]
+pub(crate) struct PreviousRotation {
+    pub(crate) quat: Quat,
+}
+
+impl PreviousRotation {
+    pub(crate) fn from_quat(quat: Quat) -> Self {
+        Self { quat }
+    }
+}
+
+#[derive(Debug, Default, Clone, Component)]
 pub(crate) struct Rotation {
     pub(crate) quat: Quat,
 }

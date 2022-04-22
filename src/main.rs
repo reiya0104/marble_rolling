@@ -22,6 +22,7 @@ fn main() {
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .insert_resource(resouces::MarbleCount { count: 0 })
         .add_event::<MarbleCreatedEvent>()
+        .add_event::<CollisionEvent>()
         .add_startup_system(setup)
         // ui
         .add_startup_system(ui::systems::setup_ui)
@@ -34,6 +35,11 @@ fn main() {
             systems::update_legs
                 .label("update_legs")
                 .after("create_leg"),
+        )
+        .add_system(
+            systems::collision_board_and_marble
+                .label("collision_board_and_marble")
+                .after("update_legs"),
         )
         // debug position
         // .add_system(debug_position)
@@ -107,7 +113,7 @@ fn setup(
         });
 
     // board
-    let rotation = Rotation::from_quat(Quat::IDENTITY);
+    let rotation = Rotation::default();
     let board_position = Position::default();
     commands
         .spawn()
@@ -384,6 +390,6 @@ fn update_normal_vector_transform_by_rotation(
         transform.rotation = Quat::IDENTITY;
         transform.rotate_around(Vec3::ZERO, rotation.quat);
         position.vec3 = transform.translation;
-        // println!("{:?}, {:?}, {:?}", position, transform, rotation);
+        println!("{:?}, {:?}, {:?}", position, transform, rotation);
     }
 }

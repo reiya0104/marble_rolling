@@ -87,25 +87,14 @@ pub(crate) struct Rotation {
 }
 
 impl Rotation {
+    // pub(crate) fn new(x: f32, y: f32, z: f32) -> Self {
+    //     Self {
+    //         vec3: Vec3::new(x, y, z),
+    //     }
+    // }
+
     pub(crate) fn from_quat(quat: Quat) -> Self {
         Self { quat }
-    }
-}
-
-// 垂線の足
-// (天板の)法線ベクトルとビー玉に依存する
-#[derive(Debug, Clone, Component)]
-pub(crate) struct Leg {
-    pub(crate) normal_vector_entity: Entity,
-    pub(crate) marble_entity: Entity,
-}
-
-impl Leg {
-    pub(crate) fn new(normal_vector_entity: Entity, marble_entity: Entity) -> Self {
-        Self {
-            normal_vector_entity,
-            marble_entity,
-        }
     }
 }
 

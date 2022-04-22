@@ -118,7 +118,7 @@ fn setup(
     transform.rotate_around(Vec3::ZERO, rotation.quat);
     normal_vector_position = Position::from_vec3(transform.translation);
 
-    let normal_vector = commands
+    commands
         .spawn()
         .insert(NormalVector::new(board))
         .insert(Acceleration::default())
@@ -138,11 +138,10 @@ fn setup(
             }),
             transform: *transform,
             ..default()
-        })
-        .id();
+        });
 
     // marble
-    let gravity = GRAVITY / 100.0;
+    let gravity = GRAVITY / 10.0;
     let marble_position = Position::new(0.0, 4.0, 0.0);
     let marble_acceleration = Acceleration::new(0.0, -gravity, 0.0);
     let marble_velocity = Velocity::default();
@@ -169,7 +168,7 @@ fn setup(
 
     // marble2
     let marble_position = Position::new(1.0, 5.0, 1.0);
-    let marble2 = commands
+    commands
         .spawn()
         .insert(Marble)
         .insert(marble_acceleration.clone())
@@ -187,8 +186,7 @@ fn setup(
             }),
             transform: marble_position.clone().into(),
             ..default()
-        })
-        .id();
+        });
 
     // light
     let light_position = Position::new(3.0, 5.0, 3.0);
@@ -228,7 +226,7 @@ fn update_position_by_velocity(
     mut query: Query<(&mut Position, &Velocity, Entity)>,
 ) {
     for (mut position, velocity, entity) in query.iter_mut() {
-        // println!("{:?}, {:?}, {:?}", position, velocity, entity);
+        println!("{:?}, {:?}, {:?}", position, velocity, entity);
         position.vec3 += time.delta_seconds() * velocity.vec3;
     }
 }
@@ -260,7 +258,7 @@ fn create_marble(
         let marble_position = Position::new(0.0, 4.0, 0.0);
         let marble_acceleration = Acceleration::new(0.0, -gravity, 0.0);
         let marble_velocity = Velocity::default();
-        let entity = commands
+        commands
             .spawn()
             .insert(Marble)
             .insert(marble_acceleration.clone())

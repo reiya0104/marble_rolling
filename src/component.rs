@@ -70,6 +70,20 @@ impl From<Position> for Transform {
     }
 }
 
+// 質量
+#[derive(Debug, Default, Clone, Component)]
+pub(crate) struct Mass {
+    pub(crate) mass: f32,
+}
+
+impl Mass {
+    pub(crate) fn new(mass: f32) -> Self {
+        Self {
+            mass,
+        }
+    }
+}
+
 #[derive(Debug, Default, Clone, Component)]
 pub(crate) struct PreviousRotation {
     pub(crate) quat: Quat,

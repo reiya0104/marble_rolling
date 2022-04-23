@@ -117,6 +117,7 @@ fn setup(
         .insert(board_position.clone())
         .insert(rotation.clone())
         .insert(Board)
+        .insert(Mass::new(1.0))
         .insert(PreviousRotation::from_quat(Quat::NAN))
         .insert_bundle(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Box::new(5.0, 0.1, 5.0))),
@@ -188,6 +189,7 @@ fn setup(
     let marble2 = commands
         .spawn()
         .insert(Marble)
+        .insert(Mass::new(0.5))
         .insert(marble_acceleration.clone())
         .insert(marble_velocity.clone())
         .insert(marble_position.clone())

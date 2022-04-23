@@ -1,9 +1,9 @@
 mod component;
-mod fps_text;
-mod ui;
-mod systems;
 mod events;
+mod fps_text;
 mod resources;
+mod systems;
+mod ui;
 
 use std::f32::consts::PI;
 
@@ -79,13 +79,13 @@ fn main() {
                 .after("update_rotation"),
         )
         // leg
+        .add_system(create_leg.label("create_leg"))
+        .add_system(update_legs.label("update_legs"))
         .add_system(
-            create_leg.label("create_leg")
+            collision_board_and_marble
+                .label("collision_board_and_marble")
+                .after("update_legs"),
         )
-        .add_system(
-            update_legs.label("update_legs")
-        )
-        .add_system(collision_board_and_marble.label("collision_board_and_marble").after("update_legs"))
         .run();
 }
 
@@ -210,11 +210,7 @@ fn setup(
     let leg_position = Position::new(1.0, 0.0, 1.0);
     commands
         .spawn()
-        .insert(Leg::new(
-            leg_position.vec3,
-            marble2,
-            normal_vector,
-        ))
+        .insert(Leg::new(leg_position.vec3, marble2, normal_vector))
         .insert(leg_position.clone())
         .insert_bundle(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::UVSphere {
@@ -272,10 +268,16 @@ fn update_position_by_velocity(
     }
 }
 
-fn update_object_view_by_position(mut query: Query<(&mut ObjectView, &Position, Entity)>) {
+fn update_object_view_by_position(
+    mut query: Query<(&mut ObjectView, &Position, Entity)>,
+    mut commands: Commands,
+) {
     for (mut object_view, position, entity) in query.iter_mut() {
         // println!("{:?}, {:?}, {:?}", object_view, position, entity);
         object_view.position = position.vec3;
+        if object_view.position.length() > 100.0 {
+            delete_entity(&mut commands, entity);
+        }
     }
 }
 
@@ -378,4 +380,9 @@ fn update_normal_vector_transform_by_rotation(
             // println!("{:?}, {:?}, {:?}", position, transform, rotation);
         }
     }
+}
+
+fn delete_entity(commands: &mut Commands, entity: Entity) {
+    println!("entity: {:?} deleted!", entity);
+    commands.entity(entity).despawn();
 }

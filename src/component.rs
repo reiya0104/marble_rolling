@@ -78,9 +78,7 @@ pub(crate) struct Mass {
 
 impl Mass {
     pub(crate) fn new(mass: f32) -> Self {
-        Self {
-            mass,
-        }
+        Self { mass }
     }
 }
 

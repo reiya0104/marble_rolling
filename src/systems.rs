@@ -83,7 +83,7 @@ pub(crate) fn collision_board_and_marble(
     query_normal_vector: Query<&Position, (With<NormalVector>, Without<Marble>)>,
 ) {
     for e in event_reader.iter() {
-        println!("collisioned!");
+        println!("\ncollisioned!");
         if let Ok((rotation, pre_rotation, board_mass)) = query_board.get(e.board_entity) {
             let quat = pre_rotation.quat * rotation.quat.inverse();
             let position_quat = Quat::from_vec4(e.position.extend(0.0));
@@ -101,25 +101,46 @@ pub(crate) fn collision_board_and_marble(
                 {
                     if velocity.length() >= 0.0 {
                         // if velocity.length() < 0.0001 {
-                        let marble_v = calculate_velocity_after_collision_if_board_isstoping(
+                        let marble_v = calculate_velocity_after_marble_and_board_collision(
                             normal_vector_position.vec3,
                             marble_velocity.vec3,
+                            velocity
                         );
+                        // let (marble_v, board_v) = calculate_velocity_after_collision(
+                        //     normal_vector_position.vec3,
+                        //     marble_mass.mass,
+                        //     marble_velocity.vec3,
+                        //     board_mass.mass,
+                        //     velocity
+                        // );
+
+                        // println!("marble_v: {:?}, board_v: {:?}", marble_v, board_v);
                         println!(
                             "pre_marble_v: {:?}, pre_marble_pos: {:?}",
                             marble_velocity, marble_position
                         );
                         // marble_velocity.vec3 = marble_v;
-                        if marble_v.length() > 0.0 {
-                            marble_velocity.vec3 = marble_v;
-                            marble_position.vec3 += 2.0 * marble_v * time.delta_seconds();
-                        } else {
-                            marble_velocity.vec3 = Vec3::ZERO;
-                            marble_position.vec3 += 2.0 * marble_v * time.delta_seconds();
+                        marble_velocity.vec3 = marble_v;
+                        marble_position.vec3 += 2.0 * marble_v * time.delta_seconds();
+
+                        println!(
+                            "marble_v: {:?}, marble_pos: {:?}, dis: {:?}",
+                            marble_velocity, marble_position, marble_position.vec3.dot(normal_vector_position.vec3)
+                        );
+
+                        let distance = marble_position.vec3.dot(normal_vector_position.vec3);
+                        
+                        // めり込んでしまった場合
+                        // めり込まない場所まで position を動かしてあげる
+                        let min_distance = 0.25 + 0.05;
+                        if distance.abs() < min_distance {
+                            let add_distance = ((min_distance - distance.abs()) * 1000000.0).ceil() / 1000000.0;
+                            println!("add: {:?}", add_distance);
+                            marble_position.vec3 += add_distance * normal_vector_position.vec3;
                         }
                         println!(
-                            "marble_v: {:?}, marble_pos: {:?}",
-                            marble_velocity, marble_position
+                            "marble_v: {:?}, marble_pos: {:?}, dis: {:?}",
+                            marble_velocity, marble_position, marble_position.vec3.dot(normal_vector_position.vec3)
                         );
                     }
                 }
@@ -137,46 +158,60 @@ pub(crate) fn collision_board_and_marble(
 // v1 = v0 - (1+e)(v0・n) n
 // が成り立つ．
 fn calculate_velocity_after_collision(
+    normal_vector: Vec3,
     mass1: f32,
     velocity1: Vec3,
     mass2: f32,
     velocity2: Vec3,
 ) -> (Vec3, Vec3) {
-    let coefficient_of_restitution = 1.0;
+    let coefficient_of_restitution = 0.8;
 
     // 長いので省略
     let e = coefficient_of_restitution;
+    let n = normal_vector;
+    let v1 = velocity1;
+    let v2 = velocity2;
+    let m1 = mass1;
+    let m2 = mass2;
+
+    //  撃力 impulse (単位が N⋅s = J = ジュールなので j)
+    let j = (1.0 + e) * (m1 * m2) / (m1 + m2) * ((v2 - v1) * n);
+    println!("\ninput: e = {:?}, n = {:?}, \nv1 = {:?}, m1 = {:?}, v2 = {:?}, m2 = {:?}", e, n, v1, m1, v2, m2);
+
+    println!("j = {:?}", j);
+
+    let v1_n = v1 + j / m1;
+    let v2_n = v2 + j / m2;
+    println!("v1_n = {:?}, v2_n = {:?}", v1_n, v2_n);
 
     // 衝突後の速度
-    let v1 = (mass1 - e * mass2) / (mass1 + mass2) * velocity1
-        + mass2 * (1.0 + e) / (mass1 + mass2) * velocity2;
-    let v2 = mass1 * (1.0 + e) / (mass1 + mass2) * velocity1
-        + (mass2 - e * mass1) / (mass1 + mass2) * velocity2;
-
-    return (v1, v2);
+    (
+        v1_n + (v1 - (v1 * n) * n) + v2_n,
+        v2_n + (v2 - (v2 * n) * n),
+    )
 }
 
-// ビー玉 と 静止した滑らかな天板 との衝突
-// 天板の単位法線ベクトル n: Vec3
-// ビー玉の速度 v0: Vec3
-// 反発係数 e: f32
-// 衝突後のビー玉の速度 v1: Vec3
-// このとき，
-// v1 = v0 - (1+e)(v0・n) n
-// が成り立つ．
-fn calculate_velocity_after_collision_if_board_isstoping(
+/// ビー玉 と 滑らかな天板 との衝突
+/// [aaa](./events.rs)
+fn calculate_velocity_after_marble_and_board_collision(
     normal_vector: Vec3,
     marble_velocity: Vec3,
+    board_velocity: Vec3
 ) -> Vec3 {
-    let coefficient_of_restitution = 1.0;
+    let coefficient_of_restitution = 0.7;
 
     // 長いので省略
-    let e = &coefficient_of_restitution;
-    let n = &normal_vector;
-    let v0 = &marble_velocity;
+    let e = coefficient_of_restitution;
+    let n = normal_vector;
+    let v_m = marble_velocity;
+    let v_b = board_velocity;
+    println!("\ninput: e = {:?}, n = {:?}, \nv_m = {:?}, {:?}, \nv_b = {:?}, {:?}", e, n, v_m, v_m.length(), v_b, v_b.length());
 
     // 衝突後の速度
-    let v1 = (*v0) - ((1.0 + e) * (v0.dot(*n))) * (*n);
+    let v = v_m - (1.0 + e) * ((v_m - v_b).dot(n)) * n;
+    // let v = v_m - (1.0 + e) * ((v_m).dot(n)) * n;
+    // (*v0) - ((1.0 + e) * (v0.dot(*n))) * (*n);
 
-    return v1;
+    println!("output: v = {:?}, length: {:?}\n", v, v.length());
+    return v;
 }

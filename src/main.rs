@@ -32,11 +32,11 @@ fn main() {
         .add_system(fps_text::text_update_system)
         // debug position
         // .add_system(debug_position)
-        .add_system(update_velocity_by_acceleration.label("update_velocity_by_acceleration"))
+        .add_system(update_velocity_by_force.label("update_velocity_by_force"))
         .add_system(
             update_position_by_velocity
                 .label("update_position_by_velocity")
-                .after("update_velocity_by_acceleration"),
+                .after("update_velocity_by_force"),
         )
         .add_system(update_object_view_by_position.label("update_object_view_by_position"))
         .add_system(
@@ -143,7 +143,6 @@ fn setup(
     let normal_vector = commands
         .spawn()
         .insert(NormalVector::new(board))
-        .insert(Acceleration::default())
         .insert(Velocity::default())
         .insert(normal_vector_position.clone())
         .insert(ObjectView::from_position(normal_vector_position.clone()))
@@ -163,14 +162,16 @@ fn setup(
 
     // marble
     let gravity = GRAVITY / 10.0;
+    let marble_mass = Mass::new(1.0);
     let marble_position = Position::new(0.0, 4.0, 0.0);
-    let marble_acceleration = Acceleration::new(0.0, -gravity, 0.0);
+    let marble_force = Force::new(0.0, - marble_mass.mass * gravity, 0.0);
     let marble_velocity = Velocity::default();
 
     commands
         .spawn()
         .insert(Marble)
-        .insert(marble_acceleration.clone())
+        .insert(marble_mass.clone())
+        .insert(marble_force.clone())
         .insert(marble_velocity.clone())
         .insert(marble_position.clone())
         .insert(ObjectView::from_position(marble_position.clone()))
@@ -192,9 +193,9 @@ fn setup(
     let marble2 = commands
         .spawn()
         .insert(Marble)
-        .insert(Mass::new(0.5))
-        .insert(marble_acceleration.clone())
-        .insert(marble_velocity.clone())
+        .insert(marble_mass)
+        .insert(marble_force)
+        .insert(marble_velocity)
         .insert(marble_position.clone())
         .insert(ObjectView::from_position(marble_position.clone()))
         .insert_bundle(PbrBundle {
@@ -206,7 +207,7 @@ fn setup(
                 base_color: Color::LIME_GREEN,
                 ..default()
             }),
-            transform: marble_position.clone().into(),
+            transform: marble_position.into(),
             ..default()
         })
         .id();
@@ -253,13 +254,13 @@ fn debug_position(query: Query<(&Position, Entity), With<NormalVector>>) {
     }
 }
 
-fn update_velocity_by_acceleration(
+fn update_velocity_by_force(
     time: Res<Time>,
-    mut query: Query<(&mut Velocity, &Acceleration, Entity)>,
+    mut query: Query<(&mut Velocity, &Force, &Mass, Entity)>,
 ) {
-    for (mut velocity, acceleration, entity) in query.iter_mut() {
-        // println!("{:?}, {:?}, {:?}", velocity, acceleration, entity);
-        velocity.vec3 += time.delta_seconds() * acceleration.vec3;
+    for (mut velocity, force, mass, entity) in query.iter_mut() {
+        // println!("{:?}, {:?}, {:?}", velocity, force, entity);
+        velocity.vec3 += time.delta_seconds() * force.vec3 / mass.mass;
     }
 }
 
@@ -304,12 +305,14 @@ fn create_marble(
         // marbles
         let gravity = GRAVITY / 10.0;
         let marble_position = Position::new(0.0, 4.0, 0.0);
-        let marble_acceleration = Acceleration::new(0.0, -gravity, 0.0);
+        let marble_mass = Mass::new(0.5);
+        let marble_force = Force::new(0.0, - marble_mass.mass * gravity, 0.0);
         let marble_velocity = Velocity::default();
         commands
             .spawn()
             .insert(Marble)
-            .insert(marble_acceleration.clone())
+            .insert(marble_mass)
+            .insert(marble_force.clone())
             .insert(marble_velocity.clone())
             .insert(marble_position.clone())
             .insert(ObjectView::from_position(marble_position.clone()))
@@ -353,10 +356,11 @@ fn update_rotation(
             let quat = (rotation.quat * rotate).normalize();
             let (mut vec, angle) = quat.to_axis_angle();
             vec.y = 0.0;
+            let min_angle = PI / 6.0;
             rotation.quat = if vec != Vec3::ZERO {
                 Quat::from_axis_angle(
                     vec.normalize(),
-                    if angle < PI / 4.0 { angle } else { PI / 4.0 },
+                    if angle < min_angle { angle } else { min_angle },
                 )
             } else {
                 Quat::IDENTITY

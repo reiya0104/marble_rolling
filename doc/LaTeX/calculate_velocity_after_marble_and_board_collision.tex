@@ -1,0 +1,133 @@
+
+\subsection{%
+ビー玉と天板の衝突後のビー玉の速度を算出する
+\label{calculate_velocity_after_marble_and_board_collision}
+}
+
+% TODO: 後ほど TikZ で図を描画する
+
+{%
+\makeatletter
+\newcommand{\velocity}{\bm{v}}
+\newcommand{\v@marble}{\velocity_{\rm marble}}
+\newcommand{\v@marble@prime}{\v@marble^\prime}
+\newcommand{\v@board}{\velocity_{\rm board}}
+\newcommand{\v@marble@from@board}{\velocity_{{\rm marble} \leftarrow {\rm board}}}
+\newcommand{\v@marble@from@board@prime}{\v@marble@from@board^\prime}
+
+\newcommand{\v@m}{\velocity_{\rm m}}
+\newcommand{\v@m@prime}{\v@m^\prime}
+\newcommand{\v@b}{\velocity_{\rm b}}
+
+\newcommand{\v@m@from@b}{\velocity_{{\rm m} \leftarrow {\rm b}}}
+\newcommand{\v@m@from@b@n}{{\v@m@from@b}^{\n}}
+\newcommand{\v@m@from@b@n@prime}{{\v@m@from@b}^{\n^\prime}}
+
+\newcommand{\v@m@prime@from@b}{\velocity^\prime_{{\rm m} \leftarrow {\rm b}}}
+\newcommand{\v@m@prime@from@b@n}{{\v@m@prime@from@b}^{\n}}
+\newcommand{\v@m@prime@from@b@n@prime}{{\v@m@prime@from@b}^{\n^\prime}}
+
+
+\newcommand{\n}{\bm{n}}
+
+\begin{itembox}[l]{\bf 問題}
+  速度 \(\v@marble\) で動くビー玉(marble)と，
+  速度 \(\v@board\) で動く天板(board)が衝突したとする．
+  衝突後のビー玉の速度 \(\v@marble@prime\) を求めよ．
+
+  ここで，天板の単位法線ベクトル(衝突面を上向きにしたもの)は \(\n\)，
+  天板とビー玉間のはね返り定数を \(e\) とする． 
+
+  ただし，天板の表面は滑らかであるとし，衝突時に影響を受けないものとする．
+\end{itembox}
+
+\noindent
+{\bf 結論}
+\begin{align}
+  \label{eq:v@marble@prime}
+  \v@marble@prime = \v@marble - (1 + e) ((\v@marble - \v@board) \cdot \n) \, \n
+\end{align}
+\vskip\baselineskip
+\noindent
+{\bf 方針}
+
+方針としては，
+\begin{enumerate}[(1)]
+  \item 静止している系から考えるのは難しいので，天板から見た系を考える．
+  \item 天板から見た系におけるビー玉の速度を求める．
+  \item 天板から見た系において衝突後のビー玉の速度を求める．
+  \item 静止している系における衝突後のビー玉の速度を求める．
+\end{enumerate}
+として求める．
+\vskip\baselineskip
+\noindent
+{\bf 解答}
+
+便宜上
+\(\v@m \coloneqq \v@marble, \,
+  \v@b \coloneqq \v@board \)
+とおく．
+
+\begin{enumerate}[(1)]
+  \item 天板から見た系を考える．
+  \item 天板から見た系におけるビー玉の速度を \(\v@m@from@b\) とする．
+  このとき，\(\v@m@from@b\) は
+  天板に対するビー玉の相対速度であるから，
+  \begin{align}
+    \label{eq:v@m@from@b}
+    \v@m@from@b = \v@m - \v@b
+  \end{align}
+  である．
+  \item 天板から見た系において衝突後のビー玉の速度を \(\v@m@prime@from@b\) とする．
+  
+  \(\v@m@from@b\) を天板の鉛直方向成分
+  \(\v@m@from@b@n\)
+  と平行方向成分
+  \(\v@m@from@b@n@prime\)
+  に分解すると，
+  \begin{align*}
+    \v@m@from@b@n &= (\v@m@from@b \cdot \n) \, \n \\
+    \v@m@from@b@n@prime &= \v@m@from@b - \v@m@from@b@n \\
+    &= \v@m@from@b - (\v@m@from@b \cdot \n) \, \n
+  \end{align*}
+  である．
+
+  天板との衝突後，ビー玉の速度の鉛直方向の成分を
+  \(\v@m@prime@from@b@n\) とすると
+  \(\v@m@prime@from@b@n = -e \, \v@m@from@b@n\) である．
+  平行方向成分は変わらず
+  \(\v@m@from@b@n@prime\)
+  であるから，
+  \begin{align}
+    \v@m@prime@from@b &= \v@m@prime@from@b@n + \v@m@from@b@n@prime \notag \\
+    &= -e \, \v@m@from@b@n + \v@m@from@b@n@prime \notag \\
+    &= -e ((\v@m@from@b \cdot \n) \, \n) + (\v@m@from@b - (\v@m@from@b \cdot \n) \, \n) \notag \\
+    &=
+    \label{eq:v@m@prime@from@b}
+    \v@m@from@b - (1 + e) (\v@m@from@b \cdot \n) \, \n
+  \end{align}
+  である．
+  \item 静止している系における衝突後のビー玉の速度 \(\v@marble@prime\) は，
+  \(\v@m@prime@from@b\) と \(\v@b\) で表すと，
+  \(\v@marble@prime = \v@m@prime@from@b + \v@b \)
+  である．
+  これと式 \eqref{eq:v@m@from@b}, \eqref{eq:v@m@prime@from@b} を用いると，
+  \begin{align*}
+    \v@marble@prime &= (\v@m@from@b - (1 + e) (\v@m@from@b \cdot \n) \, \n) + \v@b \\
+    &= ((\v@m - \v@b) - (1 + e) ((\v@m - \v@b) \cdot \n) \, \n) + \v@b \\
+    &= \v@m - (1 + e) ((\v@m - \v@b) \cdot \n) \, \n
+  \end{align*}
+  である．
+  
+  したがって，
+  \begin{align}
+    \v@marble@prime = \v@marble - (1 + e) ((\v@marble - \v@board) \cdot \n) \, \n
+    \tag{\ref{eq:v@marble@prime}}
+  \end{align}
+  が成り立つ．
+\end{enumerate}
+
+\makeatother
+}
+
+

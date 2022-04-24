@@ -22,11 +22,11 @@ impl ObjectView {
 
 // 位置情報などのコンポーネント
 #[derive(Debug, Default, Clone, Component)]
-pub(crate) struct Acceleration {
+pub(crate) struct Force {
     pub(crate) vec3: Vec3,
 }
 
-impl Acceleration {
+impl Force {
     pub(crate) fn new(x: f32, y: f32, z: f32) -> Self {
         Self {
             vec3: Vec3::new(x, y, z),
@@ -44,6 +44,10 @@ impl Velocity {
         Self {
             vec3: Vec3::new(x, y, z),
         }
+    }
+
+    pub(crate) fn from_vec3(vec3: Vec3) -> Self {
+        Self { vec3 }
     }
 }
 

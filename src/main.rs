@@ -38,11 +38,7 @@ fn main() {
                 .label("update_position_by_velocity")
                 .after("update_velocity_by_acceleration"),
         )
-        .add_system(
-            update_object_view_by_position
-                .label("update_object_view_by_position")
-                .after("update_position_by_velocity"),
-        )
+        .add_system(update_object_view_by_position.label("update_object_view_by_position"))
         .add_system(
             update_transform_by_object_view
                 .label("update_transform_by_object_view")
@@ -80,11 +76,16 @@ fn main() {
         )
         // leg
         .add_system(create_leg.label("create_leg"))
-        .add_system(update_legs.label("update_legs"))
+        .add_system(
+            update_legs
+                .label("update_legs")
+                .before("collision_board_and_marble"),
+        )
         .add_system(
             collision_board_and_marble
                 .label("collision_board_and_marble")
-                .after("update_legs"),
+                .after("update_position_by_velocity")
+                .before("update_object_view_by_position"),
         )
         .run();
 }
@@ -99,13 +100,15 @@ fn setup(
     commands.spawn_bundle(UiCameraBundle::default());
 
     // 3D camera
-    let camera_position = Position::new(0.0, 1.0, 10.0);
+    let camera_position = Position::new(0.0, 5.0, 30.0);
     commands
         .spawn()
         .insert(Camera)
         .insert(camera_position.clone())
         .insert_bundle(PerspectiveCameraBundle {
-            transform: camera_position.into(),
+            transform: Transform::from_translation(camera_position.vec3)
+                // .looking_at(Vec3::new(0.0, 0.0, 0.0), Vec3::Y)
+                ,
             ..default()
         });
 
@@ -120,7 +123,7 @@ fn setup(
         .insert(Mass::new(1.0))
         .insert(PreviousRotation::from_quat(Quat::NAN))
         .insert_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Box::new(5.0, 0.1, 5.0))),
+            mesh: meshes.add(Mesh::from(shape::Box::new(20.0, 0.1, 20.0))),
             material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
             transform: Transform {
                 translation: board_position.vec3,

@@ -1,0 +1,56 @@
+\subsection{フローチャート
+\label{flowchart}
+}
+
+% 参考: https://molina.jp/blog/tikz%E3%81%A6%E3%83%95%E3%83%AD%E3%83%BC%E3%83%81%E3%83%A3%E3%83%BC%E3%83%88%E3%82%92%E6%9B%B8%E3%81%8F/#fnref:1
+
+フローチャート
+
+{%
+
+\begin{center}
+  \newcommand{\ppbb}{path picture bounding box}
+  \begin{tikzpicture}
+    \tikzset{Terminal/.style={rounded rectangle,  draw,  text centered, text width=3cm, minimum height=1.5cm}};
+    \tikzset{Process/.style={rectangle, draw, text centered, text width=5cm, minimum height=1.5cm}};
+    \tikzset{Decision/.style={diamond, draw, text centered, aspect=3,text width=5cm, minimum height=1.5cm}};
+    \node[Terminal](S) at (0,0) {Start};
+    \node[Process, below=2.0 of S.center](UV){速度の更新 \\ update\_velocity(mass, force)};
+    \draw[->, thick] (S) -- (UV);
+    \node[Process, below=1.5 of UV.center](UP){位置の更新 \\ update\_position(velocity)};
+    \draw[->, thick] (UV) -- (UP);
+    \node[Process, text width=7cm, below=1.5 of UP.center](UMS){衝突判定 \\ update\_marble\_state(marble\_position, \dots)};
+    \draw[->, thick] (UP) -- (UMS);
+    \node[rectangle, draw, dashed, fill=blue!5, minimum width=15cm
+      , minimum height=7.5cm, below=1.5 of UMS.center](UF){};
+    \draw (UF)node[left, xshift=-135, yshift=90, text=blue]{update\_force()};
+    \node[Decision, aspect=3.5, below=2.0 of UMS.center](MS){ビー玉の状態 \\ switch marble\_state:};
+    \draw[->, thick] (UMS) -- (MS);
+    \node[Process, text width=4cm, below=3.0 of MS.center](Collision){衝突応答};
+    \draw[->, thick] (MS)node[left, yshift=-70]{Collision(衝突)} -- (Collision);
+    \node[Process, text width=4cm, below right=3.0 and 3.0 of MS.center](Contact){接触応答};
+    \draw[->, thick] (0, -12.5)node[above, xshift=140]{Contact(接触))}  -| (Contact);
+    \node[Process, text width=4cm, below=2.5 of Collision.center](D){描画};
+    \draw[->, thick] (0, -12.5)node[above, xshift=-140]{Float(衝突・接触なし)}  -| (-5, -15.5) |- (0, -15.5);
+    \draw[->, thick] (Collision) -- (D);
+    \draw[->, thick] (Contact) |- (0, -15.5);
+    \draw[->, thick] (D) |- (8, -19) |- (0, -1.3);
+  \end{tikzpicture}
+\end{center}
+
+
+
+それぞれのオブジェクトを構成する要素
+
+\begin{itemize}
+  \item Force 力: Vec3
+  \item Velocity 速度: Vec3
+  \item Position 位置: Vec3
+  \item 衝突判定
+  \begin{itemize}
+    \item 衝突 (Collision) or 接触 (Contact)
+  \end{itemize}
+  \item 衝突応答
+\end{itemize}
+
+}

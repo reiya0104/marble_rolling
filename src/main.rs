@@ -1,4 +1,5 @@
 mod component;
+mod consts;
 mod events;
 mod fps_text;
 mod resources;
@@ -10,12 +11,13 @@ use std::f32::consts::PI;
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*, DefaultPlugins};
 
 use component::*;
+use consts::*;
 use events::*;
 use resources::*;
 use systems::*;
 use ui::components::*;
 
-const GRAVITY: f32 = 9.80665;
+// const GRAVITY: f32 = 9.80665;
 
 fn main() {
     App::new()
@@ -87,6 +89,11 @@ fn main() {
                 .after("update_position_by_velocity")
                 .before("update_object_view_by_position"),
         )
+        .add_system(
+            reset_force
+                .label("reset_force")
+                .before("collision_board_and_marble"),
+        )
         .run();
 }
 
@@ -106,9 +113,7 @@ fn setup(
         .insert(Camera)
         .insert(camera_position.clone())
         .insert_bundle(PerspectiveCameraBundle {
-            transform: Transform::from_translation(camera_position.vec3)
-                // .looking_at(Vec3::new(0.0, 0.0, 0.0), Vec3::Y)
-                ,
+            transform: Transform::from_translation(camera_position.vec3), // .looking_at(Vec3::new(0.0, 0.0, 0.0), Vec3::Y)
             ..default()
         });
 
@@ -164,7 +169,7 @@ fn setup(
     let gravity = GRAVITY / 10.0;
     let marble_mass = Mass::new(1.0);
     let marble_position = Position::new(0.0, 4.0, 0.0);
-    let marble_force = Force::new(0.0, - marble_mass.mass * gravity, 0.0);
+    let marble_force = Force::new(0.0, -marble_mass.mass * gravity, 0.0);
     let marble_velocity = Velocity::default();
 
     commands
@@ -259,7 +264,7 @@ fn update_velocity_by_force(
     mut query: Query<(&mut Velocity, &Force, &Mass, Entity)>,
 ) {
     for (mut velocity, force, mass, entity) in query.iter_mut() {
-        // println!("{:?}, {:?}, {:?}", velocity, force, entity);
+        println!("{:?}, {:?}, {:?}", velocity, force, entity);
         velocity.vec3 += time.delta_seconds() * force.vec3 / mass.mass;
     }
 }
@@ -306,7 +311,7 @@ fn create_marble(
         let gravity = GRAVITY / 10.0;
         let marble_position = Position::new(0.0, 4.0, 0.0);
         let marble_mass = Mass::new(0.5);
-        let marble_force = Force::new(0.0, - marble_mass.mass * gravity, 0.0);
+        let marble_force = Force::new(0.0, -marble_mass.mass * gravity, 0.0);
         let marble_velocity = Velocity::default();
         commands
             .spawn()

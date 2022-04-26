@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     component::*,
+    consts::GRAVITY,
     events::{CollisionEvent, MarbleCreatedEvent},
     resources::MarbleCount,
 };
@@ -77,7 +78,7 @@ pub(crate) fn collision_board_and_marble(
     mut event_reader: EventReader<CollisionEvent>,
     query_board: Query<(&Rotation, &PreviousRotation, &Mass), With<Board>>,
     mut query_marble: Query<
-        (&mut Velocity, &mut Position, &Mass),
+        (&mut Velocity, &mut Position, &mut Force, &Mass),
         (With<Marble>, Without<NormalVector>),
     >,
     query_normal_vector: Query<&Position, (With<NormalVector>, Without<Marble>)>,
@@ -96,15 +97,19 @@ pub(crate) fn collision_board_and_marble(
             println!("velocity: {:?}, {:?}", velocity, velocity.length());
             println!("distance: {:?}", e.distance);
             if let Ok(normal_vector_position) = query_normal_vector.get(e.normal_vector_entity) {
-                if let Ok((mut marble_velocity, mut marble_position, marble_mass)) =
-                    query_marble.get_mut(e.marble_entity)
+                if let Ok((
+                    mut marble_velocity,
+                    mut marble_position,
+                    mut marble_force,
+                    marble_mass,
+                )) = query_marble.get_mut(e.marble_entity)
                 {
                     if velocity.length() >= 0.0 {
                         // if velocity.length() < 0.0001 {
                         let marble_v = calculate_velocity_after_marble_and_board_collision(
                             normal_vector_position.vec3,
                             marble_velocity.vec3,
-                            velocity
+                            velocity,
                         );
                         // let (marble_v, board_v) = calculate_velocity_after_collision(
                         //     normal_vector_position.vec3,
@@ -120,27 +125,35 @@ pub(crate) fn collision_board_and_marble(
                             marble_velocity, marble_position
                         );
                         // marble_velocity.vec3 = marble_v;
+                        let delta_v = marble_v - marble_velocity.vec3;
                         marble_velocity.vec3 = marble_v;
                         marble_position.vec3 += 2.0 * marble_v * time.delta_seconds();
 
                         println!(
                             "marble_v: {:?}, marble_pos: {:?}, dis: {:?}",
-                            marble_velocity, marble_position, marble_position.vec3.dot(normal_vector_position.vec3)
+                            marble_velocity,
+                            marble_position,
+                            marble_position.vec3.dot(normal_vector_position.vec3)
                         );
 
                         let distance = marble_position.vec3.dot(normal_vector_position.vec3);
-                        
+
                         // めり込んでしまった場合
                         // めり込まない場所まで position を動かしてあげる
                         let min_distance = 0.25 + 0.05;
                         if distance.abs() < min_distance {
-                            let add_distance = ((min_distance - distance.abs()) * 1000000.0).ceil() / 1000000.0;
+                            let add_distance =
+                                ((min_distance - distance.abs()) * 1000000.0).ceil() / 1000000.0;
                             println!("add: {:?}", add_distance);
                             marble_position.vec3 += add_distance * normal_vector_position.vec3;
+                            
+                            marble_force.vec3 += marble_mass.mass * delta_v / time.delta_seconds();
                         }
                         println!(
                             "marble_v: {:?}, marble_pos: {:?}, dis: {:?}",
-                            marble_velocity, marble_position, marble_position.vec3.dot(normal_vector_position.vec3)
+                            marble_velocity,
+                            marble_position,
+                            marble_position.vec3.dot(normal_vector_position.vec3)
                         );
                     }
                 }
@@ -176,7 +189,10 @@ fn calculate_velocity_after_collision(
 
     //  撃力 impulse (単位が N⋅s = J = ジュールなので j)
     let j = (1.0 + e) * (m1 * m2) / (m1 + m2) * ((v2 - v1) * n);
-    println!("\ninput: e = {:?}, n = {:?}, \nv1 = {:?}, m1 = {:?}, v2 = {:?}, m2 = {:?}", e, n, v1, m1, v2, m2);
+    println!(
+        "\ninput: e = {:?}, n = {:?}, \nv1 = {:?}, m1 = {:?}, v2 = {:?}, m2 = {:?}",
+        e, n, v1, m1, v2, m2
+    );
 
     println!("j = {:?}", j);
 
@@ -196,7 +212,7 @@ fn calculate_velocity_after_collision(
 fn calculate_velocity_after_marble_and_board_collision(
     normal_vector: Vec3,
     marble_velocity: Vec3,
-    board_velocity: Vec3
+    board_velocity: Vec3,
 ) -> Vec3 {
     let coefficient_of_restitution = 0.7;
 
@@ -205,7 +221,15 @@ fn calculate_velocity_after_marble_and_board_collision(
     let n = normal_vector;
     let v_m = marble_velocity;
     let v_b = board_velocity;
-    println!("\ninput: e = {:?}, n = {:?}, \nv_m = {:?}, {:?}, \nv_b = {:?}, {:?}", e, n, v_m, v_m.length(), v_b, v_b.length());
+    println!(
+        "\ninput: e = {:?}, n = {:?}, \nv_m = {:?}, {:?}, \nv_b = {:?}, {:?}",
+        e,
+        n,
+        v_m,
+        v_m.length(),
+        v_b,
+        v_b.length()
+    );
 
     // 衝突後の速度
     let v = v_m - (1.0 + e) * ((v_m - v_b).dot(n)) * n;
@@ -214,4 +238,11 @@ fn calculate_velocity_after_marble_and_board_collision(
 
     println!("output: v = {:?}, length: {:?}\n", v, v.length());
     return v;
+}
+
+pub(crate) fn reset_force(mut query: Query<(&mut Force, &Mass), With<Marble>>) {
+    let gravity = GRAVITY / 10.0;
+    for (mut force, mass) in query.iter_mut() {
+        force.vec3 = Vec3::new(0.0, -mass.mass * gravity, 0.0);
+    }
 }

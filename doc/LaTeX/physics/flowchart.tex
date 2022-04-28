@@ -19,12 +19,12 @@
     \draw[->, thick] (S) -- (UV);
     \node[Process, below=1.5 of UV.center](UP){位置の更新 \\ update\_position(velocity)};
     \draw[->, thick] (UV) -- (UP);
-    \node[Process, text width=7cm, below=1.5 of UP.center](UMS){衝突判定 \\ update\_marble\_state(marble\_position, \dots)};
-    \draw[->, thick] (UP) -- (UMS);
     \node[rectangle, draw, dashed, fill=blue!5, minimum width=15cm
-      , minimum height=7.5cm, below=1.5 of UMS.center](UF){};
-    \draw (UF)node[left, xshift=-135, yshift=90, text=blue]{update\_force()};
-    \node[Decision, aspect=3.5, below=2.0 of UMS.center](MS){ビー玉の状態 \\ switch marble\_state:};
+      , minimum height=9.5cm, below=1.5 of UP.center](UF){};
+    \draw (UF)node[left, xshift=-135, yshift=120, text=blue]{update\_force()};
+    \node[Process, text width=7cm, below=2.0 of UP.center](UMS){衝突判定 \\ update\_marble\_state(marble\_position, \dots)};
+    \draw[->, thick] (UP) -- (UMS);
+    \node[Decision, aspect=3.5, below=1.5 of UMS.center](MS){ビー玉の状態 \\ switch marble\_state:};
     \draw[->, thick] (UMS) -- (MS);
     \node[Process, text width=4cm, below=3.0 of MS.center](Collision){衝突応答};
     \draw[->, thick] (MS)node[left, yshift=-70]{Collision(衝突)} -- (Collision);

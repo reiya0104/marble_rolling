@@ -167,7 +167,15 @@ struct Actor;
 pub(crate) struct Board;
 
 #[derive(Debug, Component)]
-struct Tile;
+pub(crate) struct Tile {
+    pub(crate) base_position: Vec3,
+}
+
+impl Tile {
+    pub(crate) fn new(base_position: Vec3) -> Self {
+        Self { base_position }
+    }
+}
 
 #[derive(Debug, Component)]
 pub(crate) struct Light;

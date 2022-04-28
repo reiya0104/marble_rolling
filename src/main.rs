@@ -17,8 +17,6 @@ use resources::*;
 use systems::*;
 use ui::components::*;
 
-// const GRAVITY: f32 = 9.80665;
-
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
@@ -26,7 +24,11 @@ fn main() {
         .add_event::<MarbleCreatedEvent>()
         .add_event::<CollisionEvent>()
         .insert_resource(MarbleCount { count: 0 })
+        .insert_resource(TileState::new())
         .add_startup_system(setup)
+        .add_startup_system(setup_camera)
+        .add_startup_system(debug_res)
+        .add_startup_system(setup_tile)
         // ui
         .add_startup_system(ui::systems::setup_ui)
         // fps_text
@@ -76,6 +78,11 @@ fn main() {
                 .label("update_normal_vector_transform_by_rotation")
                 .after("update_rotation"),
         )
+        .add_system(
+            update_tile_transform_by_rotation
+                .label("update_tile_transform_by_rotation")
+                .after("update_normal_vector_transform_by_rotation"),
+        )
         // leg
         .add_system(create_leg.label("create_leg"))
         .add_system(
@@ -103,20 +110,6 @@ fn setup(
     mut materials: ResMut<Assets<StandardMaterial>>,
     asset_server: Res<AssetServer>,
 ) {
-    // ui camera
-    commands.spawn_bundle(UiCameraBundle::default());
-
-    // 3D camera
-    let camera_position = Position::new(0.0, 5.0, 30.0);
-    commands
-        .spawn()
-        .insert(Camera)
-        .insert(camera_position.clone())
-        .insert_bundle(PerspectiveCameraBundle {
-            transform: Transform::from_translation(camera_position.vec3), // .looking_at(Vec3::new(0.0, 0.0, 0.0), Vec3::Y)
-            ..default()
-        });
-
     // board
     let rotation = Rotation::default();
     let board_position = Position::default();
@@ -135,6 +128,7 @@ fn setup(
                 rotation: rotation.clone().quat,
                 scale: Vec3::ONE,
             },
+            visibility: Visibility { is_visible: false },
             ..default()
         })
         .id();
@@ -235,6 +229,26 @@ fn setup(
             transform: leg_position.into(),
             ..default()
         });
+}
+
+fn debug_res(tile_state: Res<TileState>) {
+    println!("{:?}", tile_state.tile_state);
+}
+
+fn setup_camera(mut commands: Commands) {
+    // ui camera
+    commands.spawn_bundle(UiCameraBundle::default());
+
+    // 3D camera
+    let camera_position = Position::new(0.0, 2.0, 10.0);
+    commands
+        .spawn()
+        .insert(Camera)
+        .insert(camera_position.clone())
+        .insert_bundle(PerspectiveCameraBundle {
+            transform: Transform::from_translation(camera_position.vec3), // .looking_at(Vec3::new(0.0, 0.0, 0.0), Vec3::Y)
+            ..default()
+        });
 
     // light
     let light_position = Position::new(3.0, 5.0, 3.0);
@@ -253,6 +267,57 @@ fn setup(
         });
 }
 
+fn setup_tile(
+    tile_state: Res<TileState>,
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    let mut x_place = (TILE_SHORT_WIDTH - TILE_ALL_X_WIDTH) / 2.0;
+    for x in 0..TILE_ALL_X_COUNT {
+        let x_length = if x % 2 == 0 {
+            TILE_SHORT_WIDTH
+        } else {
+            TILE_LONG_WIDTH
+        };
+        let mut y_place = -TILE_SHORT_WIDTH / 2.0;
+        for y in 0..TILE_ALL_Y_COUNT {
+            let y_length = if y % 2 == 0 {
+                TILE_SHORT_WIDTH
+            } else {
+                TILE_LONG_WIDTH
+            };
+            let mut z_place = (TILE_SHORT_WIDTH - TILE_ALL_Z_WIDTH) / 2.0;
+            for z in 0..TILE_ALL_Z_COUNT {
+                let z_length = if z % 2 == 0 {
+                    TILE_SHORT_WIDTH
+                } else {
+                    TILE_LONG_WIDTH
+                };
+                let tile = tile_state.tile_state[x][y][z];
+                if tile == 1 {
+                    let tile_position = Position::new(x_place, y_place, z_place);
+                    commands
+                        .spawn()
+                        .insert(tile_position.clone())
+                        .insert(Tile::new(tile_position.vec3))
+                        .insert(Mass::new(1.0))
+                        .insert_bundle(PbrBundle {
+                            mesh: meshes
+                                .add(Mesh::from(shape::Box::new(x_length, y_length, z_length))),
+                            material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
+                            transform: tile_position.into(),
+                            ..default()
+                        });
+                }
+                z_place += TILE_WIDTH_AVERAGE;
+            }
+            y_place += TILE_WIDTH_AVERAGE;
+        }
+        x_place += TILE_WIDTH_AVERAGE;
+    }
+}
+
 fn debug_position(query: Query<(&Position, Entity), With<NormalVector>>) {
     for (position, entity) in query.iter() {
         println!("{:?}, {:?}", position, entity);
@@ -264,7 +329,7 @@ fn update_velocity_by_force(
     mut query: Query<(&mut Velocity, &Force, &Mass, Entity)>,
 ) {
     for (mut velocity, force, mass, entity) in query.iter_mut() {
-        println!("{:?}, {:?}, {:?}", velocity, force, entity);
+        // println!("{:?}, {:?}, {:?}", velocity, force, entity);
         velocity.vec3 += time.delta_seconds() * force.vec3 / mass.mass;
     }
 }
@@ -392,6 +457,24 @@ fn update_normal_vector_transform_by_rotation(
             transform.rotate_around(Vec3::ZERO, rotation.quat);
             position.vec3 = transform.translation;
             // println!("{:?}, {:?}, {:?}", position, transform, rotation);
+        }
+    }
+}
+
+fn update_tile_transform_by_rotation(
+    mut query_tile: Query<(&mut Position, &mut Transform, &Tile)>,
+    query_normal_vector: Query<&NormalVector>,
+    query_board: Query<&Rotation, With<Board>>,
+) {
+    if let Some(normal_vector) = query_normal_vector.iter().next() {
+        if let Ok(rotation) = query_board.get(normal_vector.board_entity) {
+            for (mut position, mut transform, tile) in query_tile.iter_mut() {
+                transform.translation = tile.base_position;
+                transform.rotation = Quat::IDENTITY;
+                transform.rotate_around(Vec3::ZERO, rotation.quat);
+                position.vec3 = transform.translation;
+                // println!("{:?}, {:?}, {:?}", position, transform, rotation);
+            }
         }
     }
 }

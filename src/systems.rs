@@ -146,7 +146,7 @@ pub(crate) fn collision_board_and_marble(
                                 ((min_distance - distance.abs()) * 1000000.0).ceil() / 1000000.0;
                             println!("add: {:?}", add_distance);
                             marble_position.vec3 += add_distance * normal_vector_position.vec3;
-                            
+
                             marble_force.vec3 += marble_mass.mass * delta_v / time.delta_seconds();
                         }
                         println!(

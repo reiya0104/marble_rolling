@@ -26,9 +26,11 @@ fn main() {
         .insert_resource(MarbleCount { count: 0 })
         .init_resource::<StageRotation>()
         .insert_resource(TileState::new())
+        .insert_resource(TileOrigin::new())
         .add_startup_system(setup)
         .add_startup_system(setup_camera)
         .add_startup_system(debug_res)
+        .add_startup_system(setup_tile_origin)
         .add_startup_system(setup_tile)
         // ui
         .add_startup_system(ui::systems::setup_ui)
@@ -49,7 +51,7 @@ fn main() {
                 .label("update_transform_by_object_view")
                 .after("update_object_view_by_position"),
         )
-        .add_system(create_marble)
+        // .add_system(create_marble)
         .add_system(
             ui::systems::update_mouse_coltroller_main_position
                 .label("update_mouse_coltroller_main_position"),
@@ -82,6 +84,11 @@ fn main() {
         .add_system(
             update_tile_transform_by_rotation
                 .label("update_tile_transform_by_rotation")
+                .after("update_rotation"),
+        )
+        .add_system(
+            update_tile_origin
+                .label("update_tile_origin")
                 .after("update_rotation"),
         )
         // leg
@@ -211,7 +218,7 @@ fn setup(
             ..default()
         })
         .id();
-    
+
     // marble3
     let marble_position = Position::new(-1.0, 3.0, 2.0);
     let marble3 = commands
@@ -235,6 +242,19 @@ fn setup(
             ..default()
         })
         .id();
+
+    commands.spawn().insert_bundle(PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::UVSphere {
+            radius: 0.05,
+            ..default()
+        })),
+        material: materials.add(StandardMaterial {
+            base_color: Color::PURPLE,
+            ..default()
+        }),
+        transform: Transform::from_translation(Vec3::ZERO),
+        ..default()
+    });
 
     // Leg
     let leg_position = Position::new(1.0, 0.0, 1.0);
@@ -292,27 +312,56 @@ fn setup_camera(mut commands: Commands) {
         });
 }
 
-fn setup_tile(
-    tile_state: Res<TileState>,
+fn setup_tile_origin(
+    tile_origin: Res<TileOrigin>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let mut x_place = (TILE_SHORT_WIDTH - TILE_ALL_X_WIDTH) / 2.0;
+    // tile_origin
+    let tile_origin_position = Position::from_vec3(tile_origin.base_position);
+    let tile_origin = commands
+        .spawn()
+        .insert(TileOriginComponent)
+        .insert(tile_origin_position.clone())
+        .insert(ObjectView::from_position(tile_origin_position.clone()))
+        .insert_bundle(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::UVSphere {
+                radius: 0.1,
+                ..default()
+            })),
+            material: materials.add(StandardMaterial {
+                base_color: Color::ORANGE,
+                ..default()
+            }),
+            transform: tile_origin_position.into(),
+            ..default()
+        })
+        .id();
+}
+
+fn setup_tile(
+    tile_state: Res<TileState>,
+    tile_origin: Res<TileOrigin>,
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    let mut x_place = tile_origin.base_position.x + TILE_SHORT_WIDTH / 2.0;
     for x in 0..TILE_ALL_X_COUNT {
         let x_length = if x % 2 == 0 {
             TILE_SHORT_WIDTH
         } else {
             TILE_LONG_WIDTH
         };
-        let mut y_place = -TILE_SHORT_WIDTH / 2.0;
+        let mut y_place = tile_origin.base_position.y - TILE_SHORT_WIDTH / 2.0;
         for y in 0..TILE_ALL_Y_COUNT {
             let y_length = if y % 2 == 0 {
                 TILE_SHORT_WIDTH
             } else {
                 TILE_LONG_WIDTH
             };
-            let mut z_place = (TILE_SHORT_WIDTH - TILE_ALL_Z_WIDTH) / 2.0;
+            let mut z_place = tile_origin.base_position.z + TILE_SHORT_WIDTH / 2.0;
             for z in 0..TILE_ALL_Z_COUNT {
                 let z_length = if z % 2 == 0 {
                     TILE_SHORT_WIDTH
@@ -487,15 +536,28 @@ fn update_tile_transform_by_rotation(
     mut query_tile: Query<(&mut Position, &mut Transform, &Tile)>,
     stage_rotation: Res<StageRotation>,
 ) {
-    for (i, (mut position, mut transform, tile)) in query_tile.iter_mut().enumerate() {
+    for (mut position, mut transform, tile) in query_tile.iter_mut() {
         transform.translation = tile.base_position;
         transform.rotation = Quat::IDENTITY;
         transform.rotate_around(Vec3::ZERO, stage_rotation.rotation);
         position.vec3 = transform.translation;
-        if i == 0 {
-            println!("{:?}", transform);
-        }
         // println!("{:?}, {:?}, {:?}", position, transform, rotation);
+    }
+}
+
+fn update_tile_origin(
+    mut tile_origin: ResMut<TileOrigin>,
+    stage_rotation: Res<StageRotation>,
+    mut query: Query<&mut Position, With<TileOriginComponent>>,
+) {
+    let mut transform = Transform::from_translation(tile_origin.base_position);
+    transform.rotation = Quat::IDENTITY;
+    transform.rotate_around(Vec3::ZERO, stage_rotation.rotation);
+    tile_origin.position = transform.translation;
+    println!("{:?}", tile_origin.position);
+
+    if let Some(mut origin) = query.iter_mut().next() {
+        origin.vec3 = tile_origin.position;
     }
 }
 

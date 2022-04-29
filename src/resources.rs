@@ -34,9 +34,30 @@ impl TileState {
                 }
             }
         }
+        // 原点を確認
+        tile_state[0][1][0] = 0;
+        tile_state[0][1][1] = 0;
+        tile_state[1][1][0] = 0;
+        tile_state[0][2][0] = 0;
 
+        // 穴を開けてみた
         tile_state[(TILE_ALL_X_COUNT - 1) / 2][0][(TILE_ALL_Z_COUNT - 1) / 2] = 0;
 
         Self { tile_state }
+    }
+}
+
+pub(crate) struct TileOrigin {
+    pub(crate) base_position: Vec3,
+    pub(crate) position: Vec3,
+}
+
+impl TileOrigin {
+    pub(crate) fn new() -> Self {
+        let base_position = Vec3::new(-TILE_ALL_X_WIDTH / 2.0, 0.0, -TILE_ALL_Z_WIDTH / 2.0);
+        Self {
+            base_position,
+            position: base_position,
+        }
     }
 }

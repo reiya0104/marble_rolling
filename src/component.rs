@@ -178,6 +178,9 @@ impl Tile {
 }
 
 #[derive(Debug, Component)]
+pub(crate) struct TileOriginComponent;
+
+#[derive(Debug, Component)]
 pub(crate) struct Light;
 
 #[derive(Debug, Component)]

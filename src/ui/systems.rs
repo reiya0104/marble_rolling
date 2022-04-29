@@ -8,13 +8,17 @@ pub(crate) fn setup_ui(
     asset_server: Res<AssetServer>,
 ) {
     // base
-    let base_size = UISquareSize { size: 150.0 };
-    let base_position = UIPosition::new(50.0, 50.0);
+    let base_size = UISquareSize {
+        size: CONTROLLER_BASE_SIZE,
+    };
+    let base_position = UIPosition::new(CONTROLLER_BASE_POSITION_X, CONTROLLER_BASE_POSITION_Y);
 
     // main
-    let main_size = UISquareSize { size: 100.0 };
+    let main_size = UISquareSize {
+        size: CONTROLLER_MAIN_SIZE,
+    };
     let main_position = UIPosition::default();
-    let main_max_radius = UIMaxSize::new(45.0);
+    let main_max_radius = UIMaxSize::new(CONTROLLER_MAIN_MAIX_RADIUS);
 
     // mouse controller
     commands

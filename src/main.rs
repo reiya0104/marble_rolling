@@ -91,6 +91,11 @@ fn main() {
                 .label("update_tile_origin")
                 .after("update_rotation"),
         )
+        .add_system(
+            get_marble_relative_position_from_tile_origin
+                .label("get_marble_relative_position_from_tile_origin")
+                .after("update_tile_transform_by_rotation"),
+        )
         // leg
         .add_system(create_leg.label("create_leg"))
         .add_system(
@@ -119,108 +124,108 @@ fn setup(
     asset_server: Res<AssetServer>,
 ) {
     // board
-    let rotation = Rotation::default();
-    let board_position = Position::default();
-    let board = commands
-        .spawn()
-        .insert(board_position.clone())
-        .insert(rotation.clone())
-        .insert(Board)
-        .insert(Mass::new(1.0))
-        .insert(PreviousRotation::from_quat(Quat::NAN))
-        .insert_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Box::new(20.0, 0.1, 20.0))),
-            material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
-            transform: Transform {
-                translation: board_position.vec3,
-                rotation: rotation.clone().quat,
-                scale: Vec3::ONE,
-            },
-            visibility: Visibility { is_visible: false },
-            ..default()
-        })
-        .id();
+    // let rotation = Rotation::default();
+    // let board_position = Position::default();
+    // let board = commands
+    //     .spawn()
+    //     .insert(board_position.clone())
+    //     .insert(rotation.clone())
+    //     .insert(Board)
+    //     .insert(Mass::new(1.0))
+    //     .insert(PreviousRotation::from_quat(Quat::NAN))
+    //     .insert_bundle(PbrBundle {
+    //         mesh: meshes.add(Mesh::from(shape::Box::new(20.0, 0.1, 20.0))),
+    //         material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
+    //         transform: Transform {
+    //             translation: board_position.vec3,
+    //             rotation: rotation.clone().quat,
+    //             scale: Vec3::ONE,
+    //         },
+    //         visibility: Visibility { is_visible: false },
+    //         ..default()
+    //     })
+    //     .id();
 
     // normal vector
-    let mut normal_vector_position = Position::new(0.0, 1.0, 0.0);
-    let transform = &mut Transform::from_translation(normal_vector_position.vec3);
-    transform.rotate_around(Vec3::ZERO, rotation.quat);
-    normal_vector_position = Position::from_vec3(transform.translation);
+    // let mut normal_vector_position = Position::new(0.0, 1.0, 0.0);
+    // let transform = &mut Transform::from_translation(normal_vector_position.vec3);
+    // transform.rotate_around(Vec3::ZERO, rotation.quat);
+    // normal_vector_position = Position::from_vec3(transform.translation);
 
-    let normal_vector = commands
-        .spawn()
-        .insert(NormalVector::new(board))
-        .insert(Velocity::default())
-        .insert(normal_vector_position.clone())
-        .insert(ObjectView::from_position(normal_vector_position.clone()))
-        .insert_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::UVSphere {
-                radius: 0.05,
-                ..default()
-            })),
-            material: materials.add(StandardMaterial {
-                base_color: Color::PINK,
-                ..default()
-            }),
-            transform: *transform,
-            ..default()
-        })
-        .id();
+    // let normal_vector = commands
+    //     .spawn()
+    //     .insert(NormalVector::new(board))
+    //     .insert(Velocity::default())
+    //     .insert(normal_vector_position.clone())
+    //     .insert(ObjectView::from_position(normal_vector_position.clone()))
+    //     .insert_bundle(PbrBundle {
+    //         mesh: meshes.add(Mesh::from(shape::UVSphere {
+    //             radius: 0.05,
+    //             ..default()
+    //         })),
+    //         material: materials.add(StandardMaterial {
+    //             base_color: Color::PINK,
+    //             ..default()
+    //         }),
+    //         transform: *transform,
+    //         ..default()
+    //     })
+    //     .id();
 
     // marble
-    let gravity = GRAVITY / 10.0;
-    let marble_mass = Mass::new(1.0);
-    let marble_position = Position::new(0.0, 4.0, 0.0);
-    let marble_force = Force::new(0.0, -marble_mass.mass * gravity, 0.0);
-    let marble_velocity = Velocity::default();
+    // let gravity = GRAVITY / 10.0;
+    // let marble_mass = Mass::new(1.0);
+    // let marble_position = Position::new(0.0, 4.0, 0.0);
+    // let marble_force = Force::new(0.0, -marble_mass.mass * gravity, 0.0);
+    // let marble_velocity = Velocity::default();
 
-    commands
-        .spawn()
-        .insert(Marble)
-        .insert(marble_mass.clone())
-        .insert(marble_force.clone())
-        .insert(marble_velocity.clone())
-        .insert(marble_position.clone())
-        .insert(ObjectView::from_position(marble_position.clone()))
-        .insert_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::UVSphere {
-                radius: 0.5,
-                ..default()
-            })),
-            material: materials.add(StandardMaterial {
-                base_color: Color::LIME_GREEN,
-                ..default()
-            }),
-            transform: marble_position.into(),
-            ..default()
-        });
+    // commands
+    //     .spawn()
+    //     .insert(Marble)
+    //     .insert(marble_mass.clone())
+    //     .insert(marble_force.clone())
+    //     .insert(marble_velocity.clone())
+    //     .insert(marble_position.clone())
+    //     .insert(ObjectView::from_position(marble_position.clone()))
+    //     .insert_bundle(PbrBundle {
+    //         mesh: meshes.add(Mesh::from(shape::UVSphere {
+    //             radius: 0.5,
+    //             ..default()
+    //         })),
+    //         material: materials.add(StandardMaterial {
+    //             base_color: Color::LIME_GREEN,
+    //             ..default()
+    //         }),
+    //         transform: marble_position.into(),
+    //         ..default()
+    //     });
 
     // marble2
-    let marble_position = Position::new(1.0, 5.0, 1.0);
-    let marble2 = commands
-        .spawn()
-        .insert(Marble)
-        .insert(marble_mass)
-        .insert(marble_force)
-        .insert(marble_velocity)
-        .insert(marble_position.clone())
-        .insert(ObjectView::from_position(marble_position.clone()))
-        .insert_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::UVSphere {
-                radius: 0.5,
-                ..default()
-            })),
-            material: materials.add(StandardMaterial {
-                base_color: Color::LIME_GREEN,
-                ..default()
-            }),
-            transform: marble_position.into(),
-            ..default()
-        })
-        .id();
+    // let marble_position = Position::new(1.0, 5.0, 1.0);
+    // let marble2 = commands
+    //     .spawn()
+    //     .insert(Marble)
+    //     .insert(marble_mass)
+    //     .insert(marble_force)
+    //     .insert(marble_velocity)
+    //     .insert(marble_position.clone())
+    //     .insert(ObjectView::from_position(marble_position.clone()))
+    //     .insert_bundle(PbrBundle {
+    //         mesh: meshes.add(Mesh::from(shape::UVSphere {
+    //             radius: 0.5,
+    //             ..default()
+    //         })),
+    //         material: materials.add(StandardMaterial {
+    //             base_color: Color::LIME_GREEN,
+    //             ..default()
+    //         }),
+    //         transform: marble_position.into(),
+    //         ..default()
+    //     })
+    //     .id();
 
     // marble3
-    let marble_position = Position::new(-1.0, 3.0, 2.0);
+    let marble_position = Position::new(-1.0, 3.0, -2.0);
     let marble3 = commands
         .spawn()
         .insert(Marble)
@@ -257,23 +262,23 @@ fn setup(
     });
 
     // Leg
-    let leg_position = Position::new(1.0, 0.0, 1.0);
-    commands
-        .spawn()
-        .insert(Leg::new(leg_position.vec3, marble2, normal_vector))
-        .insert(leg_position.clone())
-        .insert_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::UVSphere {
-                radius: 0.1,
-                ..default()
-            })),
-            material: materials.add(StandardMaterial {
-                base_color: Color::BLACK,
-                ..default()
-            }),
-            transform: leg_position.into(),
-            ..default()
-        });
+    // let leg_position = Position::new(1.0, 0.0, 1.0);
+    // commands
+    //     .spawn()
+    //     .insert(Leg::new(leg_position.vec3, marble2, normal_vector))
+    //     .insert(leg_position.clone())
+    //     .insert_bundle(PbrBundle {
+    //         mesh: meshes.add(Mesh::from(shape::UVSphere {
+    //             radius: 0.1,
+    //             ..default()
+    //         })),
+    //         material: materials.add(StandardMaterial {
+    //             base_color: Color::BLACK,
+    //             ..default()
+    //         }),
+    //         transform: leg_position.into(),
+    //         ..default()
+    //     });
 }
 
 fn debug_res(tile_state: Res<TileState>) {
@@ -558,6 +563,16 @@ fn update_tile_origin(
 
     if let Some(mut origin) = query.iter_mut().next() {
         origin.vec3 = tile_origin.position;
+    }
+}
+
+fn get_marble_relative_position_from_tile_origin(
+    query: Query<&Position, With<Marble>>,
+    tile_origin: Res<TileOrigin>,
+    stage_rotation: Res<StageRotation>
+) {
+    for position in query.iter() {
+        println!("rela: {:?}", position.vec3 - tile_origin.position);
     }
 }
 

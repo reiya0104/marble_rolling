@@ -24,6 +24,7 @@ fn main() {
         .add_event::<MarbleCreatedEvent>()
         .add_event::<CollisionEvent>()
         .insert_resource(MarbleCount { count: 0 })
+        .init_resource::<StageRotation>()
         .insert_resource(TileState::new())
         .add_startup_system(setup)
         .add_startup_system(setup_camera)
@@ -73,15 +74,15 @@ fn main() {
                 .label("update_board_transform_by_rotation")
                 .after("update_rotation"),
         )
-        .add_system(
-            update_normal_vector_transform_by_rotation
-                .label("update_normal_vector_transform_by_rotation")
-                .after("update_rotation"),
-        )
+        // .add_system(
+        //     update_normal_vector_transform_by_rotation
+        //         .label("update_normal_vector_transform_by_rotation")
+        //         .after("update_rotation"),
+        // )
         .add_system(
             update_tile_transform_by_rotation
                 .label("update_tile_transform_by_rotation")
-                .after("update_normal_vector_transform_by_rotation"),
+                .after("update_rotation"),
         )
         // leg
         .add_system(create_leg.label("create_leg"))
@@ -195,6 +196,30 @@ fn setup(
         .insert(marble_mass)
         .insert(marble_force)
         .insert(marble_velocity)
+        .insert(marble_position.clone())
+        .insert(ObjectView::from_position(marble_position.clone()))
+        .insert_bundle(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::UVSphere {
+                radius: 0.5,
+                ..default()
+            })),
+            material: materials.add(StandardMaterial {
+                base_color: Color::LIME_GREEN,
+                ..default()
+            }),
+            transform: marble_position.into(),
+            ..default()
+        })
+        .id();
+    
+    // marble3
+    let marble_position = Position::new(-1.0, 3.0, 2.0);
+    let marble3 = commands
+        .spawn()
+        .insert(Marble)
+        // .insert(marble_mass)
+        // .insert(marble_force)
+        // .insert(marble_velocity)
         .insert(marble_position.clone())
         .insert(ObjectView::from_position(marble_position.clone()))
         .insert_bundle(PbrBundle {
@@ -404,38 +429,35 @@ fn create_marble(
 fn update_rotation(
     query_main: Query<(&UIPosition, &UIMaxSize), With<MouseControllerMain>>,
     time: Res<Time>,
-    mut quat_rotation: Query<(&mut Rotation, &mut PreviousRotation)>,
+    mut stage_rotation: ResMut<StageRotation>,
 ) {
     for (main_position, max_radius) in query_main.iter() {
         // println!("{:?}, {:?}", main_position, max_radius);
         let rotate_base_vec = Vec3::new(-main_position.vec2.y, 0.0, main_position.vec2.x);
         // println!("{:?}", rotate_base_vec);
+        let angular_v = STAGE_ROTATION_ANGULAR_VELOCITY;
         let rotate = if rotate_base_vec != Vec3::ZERO {
             Quat::from_axis_angle(
                 rotate_base_vec.normalize(),
-                PI / 4.0 * (rotate_base_vec.length() / max_radius.size) * time.delta_seconds(),
-                // PI / 4.0 * (rotate_base_vec.length() / max_radius.size),
+                angular_v * (rotate_base_vec.length() / max_radius.size) * time.delta_seconds(),
             )
         } else {
             Quat::IDENTITY
         };
-        for (mut rotation, mut pre_rotation) in quat_rotation.iter_mut() {
-            pre_rotation.quat = rotation.quat;
 
-            // next quat
-            let quat = (rotation.quat * rotate).normalize();
-            let (mut vec, angle) = quat.to_axis_angle();
-            vec.y = 0.0;
-            let min_angle = PI / 6.0;
-            rotation.quat = if vec != Vec3::ZERO {
-                Quat::from_axis_angle(
-                    vec.normalize(),
-                    if angle < min_angle { angle } else { min_angle },
-                )
-            } else {
-                Quat::IDENTITY
-            };
-        }
+        // next quat
+        let quat = (stage_rotation.rotation * rotate).normalize();
+        let (mut vec, angle) = quat.to_axis_angle();
+        vec.y = 0.0;
+        let max_angle = STAGE_ROTATION_MAX_ANGLE;
+        stage_rotation.rotation = if vec != Vec3::ZERO {
+            Quat::from_axis_angle(
+                vec.normalize(),
+                if angle < max_angle { angle } else { max_angle },
+            )
+        } else {
+            Quat::IDENTITY
+        };
     }
 }
 
@@ -446,36 +468,34 @@ fn update_board_transform_by_rotation(mut query: Query<(&mut Transform, &Rotatio
     }
 }
 
-fn update_normal_vector_transform_by_rotation(
-    mut query: Query<(&mut Position, &mut Transform, &NormalVector)>,
-    query_board: Query<&Rotation, With<Board>>,
-) {
-    for (mut position, mut transform, normal_vector) in query.iter_mut() {
-        if let Ok(rotation) = query_board.get(normal_vector.board_entity) {
-            transform.translation = Vec3::new(0.0, 1.0, 0.0);
-            transform.rotation = Quat::IDENTITY;
-            transform.rotate_around(Vec3::ZERO, rotation.quat);
-            position.vec3 = transform.translation;
-            // println!("{:?}, {:?}, {:?}", position, transform, rotation);
-        }
-    }
-}
+// fn update_normal_vector_transform_by_rotation(
+//     mut query: Query<(&mut Position, &mut Transform, &NormalVector)>,
+//     query_board: Query<&Rotation, With<Board>>,
+// ) {
+//     for (mut position, mut transform, normal_vector) in query.iter_mut() {
+//         if let Ok(rotation) = query_board.get(normal_vector.board_entity) {
+//             transform.translation = Vec3::new(0.0, 1.0, 0.0);
+//             transform.rotation = Quat::IDENTITY;
+//             transform.rotate_around(Vec3::ZERO, rotation.quat);
+//             position.vec3 = transform.translation;
+//             // println!("{:?}, {:?}, {:?}", position, transform, rotation);
+//         }
+//     }
+// }
 
 fn update_tile_transform_by_rotation(
     mut query_tile: Query<(&mut Position, &mut Transform, &Tile)>,
-    query_normal_vector: Query<&NormalVector>,
-    query_board: Query<&Rotation, With<Board>>,
+    stage_rotation: Res<StageRotation>,
 ) {
-    if let Some(normal_vector) = query_normal_vector.iter().next() {
-        if let Ok(rotation) = query_board.get(normal_vector.board_entity) {
-            for (mut position, mut transform, tile) in query_tile.iter_mut() {
-                transform.translation = tile.base_position;
-                transform.rotation = Quat::IDENTITY;
-                transform.rotate_around(Vec3::ZERO, rotation.quat);
-                position.vec3 = transform.translation;
-                // println!("{:?}, {:?}, {:?}", position, transform, rotation);
-            }
+    for (i, (mut position, mut transform, tile)) in query_tile.iter_mut().enumerate() {
+        transform.translation = tile.base_position;
+        transform.rotation = Quat::IDENTITY;
+        transform.rotate_around(Vec3::ZERO, stage_rotation.rotation);
+        position.vec3 = transform.translation;
+        if i == 0 {
+            println!("{:?}", transform);
         }
+        // println!("{:?}, {:?}, {:?}", position, transform, rotation);
     }
 }
 

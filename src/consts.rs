@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 pub(crate) const GRAVITY: f32 = 9.80665;
 
 // Tile (タイル)
@@ -35,3 +37,7 @@ pub(crate) const CONTROLLER_BASE_POSITION_Y: f32 = 50.0;
 
 pub(crate) const CONTROLLER_MAIN_SIZE: f32 = 100.0;
 pub(crate) const CONTROLLER_MAIN_MAIX_RADIUS: f32 = 45.0;
+
+// StageRotation
+pub(crate) const STAGE_ROTATION_ANGULAR_VELOCITY: f32 = PI / 6.0;
+pub(crate) const STAGE_ROTATION_MAX_ANGLE: f32 = PI / 6.0;

@@ -86,14 +86,15 @@ impl Mass {
     }
 }
 
+// 半径
 #[derive(Debug, Default, Clone, Component)]
-pub(crate) struct PreviousRotation {
-    pub(crate) quat: Quat,
+pub(crate) struct Radius {
+    pub(crate) radius: f32,
 }
 
-impl PreviousRotation {
-    pub(crate) fn from_quat(quat: Quat) -> Self {
-        Self { quat }
+impl Radius {
+    pub(crate) fn new(radius: f32) -> Self {
+        Self { radius }
     }
 }
 
@@ -109,6 +110,17 @@ impl Rotation {
     //     }
     // }
 
+    pub(crate) fn from_quat(quat: Quat) -> Self {
+        Self { quat }
+    }
+}
+
+#[derive(Debug, Default, Clone, Component)]
+pub(crate) struct PreviousRotation {
+    pub(crate) quat: Quat,
+}
+
+impl PreviousRotation {
     pub(crate) fn from_quat(quat: Quat) -> Self {
         Self { quat }
     }
@@ -149,7 +161,7 @@ impl NormalVector {
         }
     }
 }
-// カメラ用のコンポーネン
+// カメラ用のコンポーネント
 #[derive(Debug, Component)]
 struct LookAt;
 
@@ -169,11 +181,15 @@ pub(crate) struct Board;
 #[derive(Debug, Component)]
 pub(crate) struct Tile {
     pub(crate) base_position: Vec3,
+    pub(crate) index: IVec3,
 }
 
 impl Tile {
-    pub(crate) fn new(base_position: Vec3) -> Self {
-        Self { base_position }
+    pub(crate) fn new(base_position: Vec3, index: IVec3) -> Self {
+        Self {
+            base_position,
+            index,
+        }
     }
 }
 

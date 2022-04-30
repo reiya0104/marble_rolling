@@ -2,6 +2,7 @@ mod component;
 mod consts;
 mod events;
 mod fps_text;
+mod physics;
 mod resources;
 mod systems;
 mod ui;
@@ -13,6 +14,7 @@ use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*, DefaultPlugins};
 use component::*;
 use consts::*;
 use events::*;
+use physics::systems::*;
 use resources::*;
 use systems::*;
 use ui::components::*;
@@ -25,8 +27,12 @@ fn main() {
         .add_event::<CollisionEvent>()
         .insert_resource(MarbleCount { count: 0 })
         .init_resource::<StageRotation>()
+        .init_resource::<TileCollisioned>()
         .insert_resource(TileState::new())
         .insert_resource(TileOrigin::new())
+        .insert_resource(TileBaseVectorX::new())
+        .insert_resource(TileBaseVectorY::new())
+        .insert_resource(TileBaseVectorZ::new())
         .add_startup_system(setup)
         .add_startup_system(setup_camera)
         .add_startup_system(debug_res)
@@ -92,9 +98,25 @@ fn main() {
                 .after("update_rotation"),
         )
         .add_system(
-            get_marble_relative_position_from_tile_origin
-                .label("get_marble_relative_position_from_tile_origin")
-                .after("update_tile_transform_by_rotation"),
+            update_tile_base_vector
+                .label("update_tile_base_vector")
+                .after("update_tile_origin"),
+        )
+        // .add_system(
+        //     get_marble_relative_position_from_tile_origin
+        //         .label("get_marble_relative_position_from_tile_origin")
+        //         .after("update_tile_transform_by_rotation"),
+        // )
+        .add_system(
+            collision_detection
+                .label("collision_detection")
+                .after("update_tile_base_vector"),
+        )
+        //　処理重め
+        .add_system(
+            update_collisioned_tile
+                .label("update_collisioned_tile")
+                .after("collision_detection"),
         )
         // leg
         .add_system(create_leg.label("create_leg"))
@@ -225,10 +247,12 @@ fn setup(
     //     .id();
 
     // marble3
-    let marble_position = Position::new(-1.0, 3.0, -2.0);
+    let marble_position = Position::new(-1.2, 1.5, -1.2);
+    let radius = Radius::new(0.45);
     let marble3 = commands
         .spawn()
         .insert(Marble)
+        .insert(radius.clone())
         // .insert(marble_mass)
         // .insert(marble_force)
         // .insert(marble_velocity)
@@ -236,7 +260,7 @@ fn setup(
         .insert(ObjectView::from_position(marble_position.clone()))
         .insert_bundle(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::UVSphere {
-                radius: 0.5,
+                radius: radius.radius,
                 ..default()
             })),
             material: materials.add(StandardMaterial {
@@ -296,9 +320,17 @@ fn setup_camera(mut commands: Commands) {
         .insert(Camera)
         .insert(camera_position.clone())
         .insert_bundle(PerspectiveCameraBundle {
-            transform: Transform::from_translation(camera_position.vec3), // .looking_at(Vec3::new(0.0, 0.0, 0.0), Vec3::Y)
+            transform: Transform::from_translation(camera_position.vec3)
+                .looking_at(Vec3::ZERO, Vec3::Y),
             ..default()
         });
+
+    // OrthographicCamera
+    // let mut camera = OrthographicCameraBundle::new_3d();
+    // camera.orthographic_projection.scale = 3.0;
+    // camera.transform = Transform::from_xyz(0.0, 7.0, 0.0).looking_at(Vec3::ZERO, -Vec3::Z);
+    // // camera
+    // commands.spawn_bundle(camera);
 
     // light
     let light_position = Position::new(3.0, 5.0, 3.0);
@@ -379,7 +411,10 @@ fn setup_tile(
                     commands
                         .spawn()
                         .insert(tile_position.clone())
-                        .insert(Tile::new(tile_position.vec3))
+                        .insert(Tile::new(
+                            tile_position.vec3,
+                            IVec3::new(x as i32, y as i32, z as i32),
+                        ))
                         .insert(Mass::new(1.0))
                         .insert_bundle(PbrBundle {
                             mesh: meshes
@@ -559,17 +594,47 @@ fn update_tile_origin(
     transform.rotation = Quat::IDENTITY;
     transform.rotate_around(Vec3::ZERO, stage_rotation.rotation);
     tile_origin.position = transform.translation;
-    println!("{:?}", tile_origin.position);
+    // println!("{:?}", tile_origin.position);
 
     if let Some(mut origin) = query.iter_mut().next() {
         origin.vec3 = tile_origin.position;
     }
 }
 
+fn update_tile_base_vector(
+    mut tile_base_vector_x: ResMut<TileBaseVectorX>,
+    mut tile_base_vector_y: ResMut<TileBaseVectorY>,
+    mut tile_base_vector_z: ResMut<TileBaseVectorZ>,
+    stage_rotation: Res<StageRotation>,
+    tile_origin: Res<TileOrigin>,
+) {
+    tile_base_vector_x.update_position_by_rotation(&stage_rotation, &tile_origin);
+    tile_base_vector_y.update_position_by_rotation(&stage_rotation, &tile_origin);
+    tile_base_vector_z.update_position_by_rotation(&stage_rotation, &tile_origin);
+}
+
+fn update_collisioned_tile(
+    mut query_tile: Query<(&mut Handle<StandardMaterial>, &Tile)>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    tile_collisioned: Res<TileCollisioned>,
+) {
+    for (handle, tile) in query_tile.iter() {
+        if tile_collisioned.tile_collisioned.contains(&tile.index) {
+            println!("Collisioined! {:?}", tile.index);
+            if let Some(color) = materials.get_mut(handle) {
+                color.base_color = Color::YELLOW;
+            }
+        } else {
+            if let Some(color) = materials.get_mut(handle) {
+                color.base_color = Color::rgb(0.3, 0.5, 0.3);
+            }
+        }
+    }
+}
+
 fn get_marble_relative_position_from_tile_origin(
     query: Query<&Position, With<Marble>>,
     tile_origin: Res<TileOrigin>,
-    stage_rotation: Res<StageRotation>
 ) {
     for position in query.iter() {
         println!("rela: {:?}", position.vec3 - tile_origin.position);

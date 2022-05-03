@@ -33,8 +33,8 @@ fn get_relative_position(
     vec_y: &TileBaseVectorY,
     vec_z: &TileBaseVectorZ,
 ) -> Vec3 {
-    let mat3 = Mat3::from_cols(vec_x.vector, vec_y.vector, vec_z.vector);
-    mat3.inverse() * (*vec_pos - tile_origin.position)
+    let mat_p = Mat3::from_cols(vec_x.vector, vec_y.vector, vec_z.vector);
+    mat_p.inverse() * (*vec_pos - tile_origin.position)
 }
 
 enum CollsionCheckType {

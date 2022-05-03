@@ -1,0 +1,181 @@
+% physics/collision-flow/1_tikzpicture.tex
+{%
+
+% xyz軸の長さ
+\newcommand{\@size@x}{7}
+\newcommand{\@size@y}{5}
+\newcommand{\@size@z}{3}
+
+% 点P の座標
+\newcommand{\@x}{3}
+\newcommand{\@y}{4}
+\newcommand{\@z}{2}
+
+% タイルの座標の原点 \O@tile の座標
+\newcommand{\O@tile@x}{6.5}
+\newcommand{\O@tile@y}{1}
+\newcommand{\O@tile@z}{2.5}
+
+% \e@tile@xの座標
+\newcommand{\e@tile@x@x}{1/3}
+\newcommand{\e@tile@x@y}{1/2}
+\newcommand{\e@tile@x@z}{0}
+% \e@tile@yの座標
+\newcommand{\e@tile@y@x}{-1/4}
+\newcommand{\e@tile@y@y}{1/2}
+\newcommand{\e@tile@y@z}{-1/3}
+% \e@tile@zの座標
+\newcommand{\e@tile@z@x}{-3/4}
+\newcommand{\e@tile@z@y}{0}
+\newcommand{\e@tile@z@z}{1/3}
+
+\begin{center}
+  \begin{tikzpicture}
+    % 点
+    % ワールド座標系
+    \coordinate (O) at (0,0); % 原点 O
+    \coordinate (e_x) at (1,0);
+    \coordinate (e_y) at (0,1);
+    \coordinate (e_z) at ($5/6*(-1/2,{-sqrt(3)/2})$);
+    \coordinate (P) at ($\@x*(e_x)+\@y*(e_y)+\@z*(e_z)$);
+
+    % タイルの座標系
+    \coordinate (O_tile) at ($\O@tile@x*(e_x)+\O@tile@y*(e_y)+\O@tile@z*(e_z)$);
+    \coordinate (e_tile_x) at ($\e@tile@x@x*(e_x)+\e@tile@x@y*(e_y)+\e@tile@x@z*(e_z)$);
+    \coordinate (e_tile_y) at ($\e@tile@y@x*(e_x)+\e@tile@y@y*(e_y)+\e@tile@y@z*(e_z)$);
+    \coordinate (e_tile_z) at ($\e@tile@z@x*(e_x)+\e@tile@z@y*(e_y)+\e@tile@z@z*(e_z)$);
+    
+    % \v@tile@P の計算
+    \tikzmath{%
+      % 3*3行列の逆行列を求める
+      % 行列に代入
+      %
+      % [\m@a@a \m@a@b \m@a@c]
+      % [\m@b@a \m@b@b \m@b@c]
+      % [\m@c@a \m@c@b \m@c@c]
+      %
+      \m@a@a = \e@tile@x@x;
+      \m@a@b = \e@tile@y@x;
+      \m@a@c = \e@tile@z@x;
+      \m@b@a = \e@tile@x@y;
+      \m@b@b = \e@tile@y@y;
+      \m@b@c = \e@tile@z@y;
+      \m@c@a = \e@tile@x@z;
+      \m@c@b = \e@tile@y@z;
+      \m@c@c = \e@tile@z@z;
+      %
+      % 行列式
+      \@det = \m@a@a * \m@b@b * \m@c@c
+        + \m@a@b * \m@b@c * \m@c@a
+        + \m@a@c * \m@b@a * \m@c@b
+        - \m@a@a * \m@b@c * \m@c@b
+        - \m@a@b * \m@b@a * \m@c@c
+        - \m@a@c * \m@b@b * \m@c@a;
+      %
+      % 逆行列
+      \i@a@a =  (\m@b@b * \m@c@c - \m@b@c * \m@c@b) / \@det;
+      \i@a@b = -(\m@a@b * \m@c@c - \m@a@c * \m@c@b) / \@det;
+      \i@a@c =  (\m@a@b * \m@b@c - \m@a@c * \m@b@b) / \@det;
+      \i@b@a = -(\m@b@a * \m@c@c - \m@b@c * \m@c@a) / \@det;
+      \i@b@b =  (\m@a@a * \m@c@c - \m@a@c * \m@c@a) / \@det;
+      \i@b@c = -(\m@a@a * \m@b@c - \m@a@c * \m@b@a) / \@det;
+      \i@c@a =  (\m@b@a * \m@c@b - \m@b@b * \m@c@a) / \@det;
+      \i@c@b = -(\m@a@a * \m@c@b - \m@a@b * \m@c@a) / \@det;
+      \i@c@c =  (\m@a@a * \m@b@b - \m@a@b * \m@b@a) / \@det;
+      %
+      % ベクトルに代入
+      \v@x = \@x - \O@tile@x;
+      \v@y = \@y - \O@tile@y;
+      \v@z = \@z - \O@tile@z;
+      %
+      % 逆行列 * ベクトル
+      \iv@x = \i@a@a * \v@x + \i@a@b * \v@y + \i@a@c * \v@z;
+      \iv@y = \i@b@a * \v@x + \i@b@b * \v@y + \i@b@c * \v@z;
+      \iv@z = \i@c@a * \v@x + \i@c@b * \v@y + \i@c@c * \v@z;
+      %
+      % 数値を代入
+      \v@tile@P@x = \iv@x;
+      \v@tile@P@y = \iv@y;
+      \v@tile@P@z = \iv@z;
+    }
+    \coordinate (v_tile_P) at ($\v@tile@P@x*(e_tile_x)+\v@tile@P@y*(e_tile_y)+\v@tile@P@z*(e_tile_z)$);
+
+    % 点の描画
+    \fill (O) circle (0.06) node[above left]{O}; % 点O
+    % xyz軸の描画
+    \draw[->,>=stealth,semithick] (O)--($\@size@x*(e_x)$)node[above]{$x$}; % x軸
+    \draw[->,>=stealth,semithick] (O)--($\@size@y*(e_y)$)node[left]{$y$}; % y軸
+    \draw[->,>=stealth,semithick] (O)--($\@size@z*(e_z)$)node[above left]{$z$}; % z軸
+
+    % 基本ベクトルの描画
+    % \draw[->,>=stealth,very thick] (O)--(e_x)node[above]{$\e@x$}; % e_x
+    % \draw[->,>=stealth,very thick] (O)--(e_y)node[left]{$\e@y$}; % e_y
+    % \draw[->,>=stealth,very thick] (O)--(e_z)node[above left]{$\e@z$}; % e_z
+
+    % \v@P の描画
+    \draw[->,>=stealth,very thick] (O)--(P)node[xshift=-20,yshift=-40]{$\v@P$}; % v_P
+
+    \fill (P) circle (0.06) node[above left]{P}; % 点P
+    % 点Pのx座標からの点線
+    \draw[dashed, thin] ($\@x*(e_x)$)--($\@x*(e_x)+\@y*(e_y)$);
+    \draw[dashed, thin] ($\@x*(e_x)$)--($\@x*(e_x)+\@z*(e_z)$);
+    % 点Pのy座標からの点線
+    \draw[dashed, thin] ($\@y*(e_y)$)--($\@y*(e_y)+\@x*(e_x)$);
+    \draw[dashed, thin] ($\@y*(e_y)$)--($\@y*(e_y)+\@z*(e_z)$);
+    % 点Pのz座標からの点線
+    \draw[dashed, thin] ($\@z*(e_z)$)--($\@z*(e_z)+\@y*(e_y)$);
+    \draw[dashed, thin] ($\@z*(e_z)$)--($\@z*(e_z)+\@x*(e_x)$);
+    % 点Pへの点線
+    \draw[dashed, thin] ($\@x*(e_x)+\@y*(e_y)$)--(P);
+    \draw[dashed, thin] ($\@y*(e_y)+\@z*(e_z)$)--(P);
+    \draw[dashed, thin] ($\@z*(e_z)+\@x*(e_x)$)--(P);
+
+
+    \fill (O_tile) circle (0.06) node[right]{$\O@tile$}; % 点 \O@tile の描画
+    \draw[->,>=stealth,very thick] (O)--(O_tile)node[left,xshift=-40,yshift=15]{$\v@O@tile$}; % v_P
+
+    \draw[dashed, thin] (O)--($\O@tile@x*(e_x)$); % 点 \O@tile の描画
+    % 点 \O@tile のx座標からの点線
+    \draw[dashed, thin] ($\O@tile@x*(e_x)$)--($\O@tile@x*(e_x)+\O@tile@y*(e_y)$);
+    \draw[dashed, thin] ($\O@tile@x*(e_x)$)--($\O@tile@x*(e_x)+\O@tile@z*(e_z)$);
+    % 点 \O@tile のy座標からの点線
+    \draw[dashed, thin] ($\O@tile@y*(e_y)$)--($\O@tile@y*(e_y)+\O@tile@x*(e_x)$);
+    \draw[dashed, thin] ($\O@tile@y*(e_y)$)--($\O@tile@y*(e_y)+\O@tile@z*(e_z)$);
+    % 点 \O@tile のz座標からの点線
+    \draw[dashed, thin] ($\O@tile@z*(e_z)$)--($\O@tile@z*(e_z)+\O@tile@y*(e_y)$);
+    \draw[dashed, thin] ($\O@tile@z*(e_z)$)--($\O@tile@z*(e_z)+\O@tile@x*(e_x)$);
+    % 点Pへの点線
+    \draw[dashed, thin] ($\O@tile@x*(e_x)+\O@tile@y*(e_y)$)--(O_tile);
+    \draw[dashed, thin] ($\O@tile@y*(e_y)+\O@tile@z*(e_z)$)--(O_tile);
+    \draw[dashed, thin] ($\O@tile@z*(e_z)+\O@tile@x*(e_x)$)--(O_tile);
+    
+    % タイルの座標系の基本ベクトル
+    \draw[->,>=stealth,very thick, blue] (O_tile)--($(O_tile)+(e_tile_x)$)node[right]{$\e@tile@x$}; % e_tile_x
+    \draw[->,>=stealth,very thick, blue] (O_tile)--($(O_tile)+(e_tile_y)$)node[above left]{$\e@tile@y$}; % e_tile_y
+    \draw[->,>=stealth,very thick, blue] (O_tile)--($(O_tile)+(e_tile_z)$)node[below]{$\e@tile@z$}; % e_tile_z
+
+    % v_tile_P の描画
+    % \draw[->,>=stealth,very thick] (O_tile)--(P)node[left,xshift=-20,yshift=-7]{$\v@tile@P$}; % v_tile_P
+    \draw[->,>=stealth,very thick, blue](O_tile)--($(O_tile)+(v_tile_P)$)
+      node[right,xshift=23,yshift=-20]{$\v@tile@P$}; % v_tile_P
+    
+    % O_tile から座標への点線
+    \draw[dashed, thin, blue] (O_tile)--($(O_tile)+\v@tile@P@x*(e_tile_x)$);
+    \draw[dashed, thin, blue] (O_tile)--($(O_tile)+\v@tile@P@y*(e_tile_y)$);
+    \draw[dashed, thin, blue] (O_tile)--($(O_tile)+\v@tile@P@z*(e_tile_z)$);
+    % タイルの座標系での点Pのx座標からの点線
+    \draw[dashed, thin, blue] ($(O_tile)+\v@tile@P@x*(e_tile_x)$)--($(O_tile)+\v@tile@P@x*(e_tile_x)+\v@tile@P@y*(e_tile_y)$);
+    \draw[dashed, thin, blue] ($(O_tile)+\v@tile@P@x*(e_tile_x)$)--($(O_tile)+\v@tile@P@x*(e_tile_x)+\v@tile@P@z*(e_tile_z)$);
+    % タイルの座標系での点Pのy座標からの点線
+    \draw[dashed, thin, blue] ($(O_tile)+\v@tile@P@y*(e_tile_y)$)--($(O_tile)+\v@tile@P@y*(e_tile_y)+\v@tile@P@x*(e_tile_x)$);
+    \draw[dashed, thin, blue] ($(O_tile)+\v@tile@P@y*(e_tile_y)$)--($(O_tile)+\v@tile@P@y*(e_tile_y)+\v@tile@P@z*(e_tile_z)$);
+    % タイルの座標系での点Pのz座標からの点線
+    \draw[dashed, thin, blue] ($(O_tile)+\v@tile@P@z*(e_tile_z)$)--($(O_tile)+\v@tile@P@z*(e_tile_z)+\v@tile@P@y*(e_tile_y)$);
+    \draw[dashed, thin, blue] ($(O_tile)+\v@tile@P@z*(e_tile_z)$)--($(O_tile)+\v@tile@P@z*(e_tile_z)+\v@tile@P@x*(e_tile_x)$);
+    % 点Pへの点線
+    \draw[dashed, thin, blue] ($(O_tile)+\v@tile@P@x*(e_tile_x)+\v@tile@P@y*(e_tile_y)$)--(P);
+    \draw[dashed, thin, blue] ($(O_tile)+\v@tile@P@y*(e_tile_y)+\v@tile@P@z*(e_tile_z)$)--(P);
+    \draw[dashed, thin, blue] ($(O_tile)+\v@tile@P@z*(e_tile_z)+\v@tile@P@x*(e_tile_x)$)--(P);
+  \end{tikzpicture}
+\end{center}
+}

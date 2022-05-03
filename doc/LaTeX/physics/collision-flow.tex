@@ -1,0 +1,69 @@
+% physics/collision-flow.tex
+
+{%
+\makeatletter
+
+\newcommand{\sec@collision@flow}[1]{%
+  \stringcases
+    {#1}%
+    {%
+      {1}{ビー玉の位置をタイルの座標系に変換}%
+      {2}{ビー玉のxyz軸それぞれの最大最小の座標に基づくタイルの位置を抽出}%
+      {3}{抽出された8つのタイルの位置とその間のタイルの位置についてタイルが存在するものを取り出す}%
+      {4}{存在するタイルについてそのタイルとビー玉との距離を計算}%
+      {5}{距離がビー玉の半径よりも小さかったら衝突してると判定}%
+    }%
+    {[else]}%
+}
+
+\newcommand{\e}{\bm{e}}
+
+\newcommand{\e@x}{\e_x}
+\newcommand{\e@y}{\e_y}
+\newcommand{\e@z}{\e_z}
+
+\newcommand{\e@tile}{\e^\prime}
+\newcommand{\e@tile@x}{\e@tile_x}
+\newcommand{\e@tile@y}{\e@tile_y}
+\newcommand{\e@tile@z}{\e@tile_z}
+
+\newcommand{\O@tile}{{\rm O}^\prime}
+
+\newcommand{\v@O@tile}{\bm{v}_{\O@tile}}
+
+\newcommand{\v@P}{\bm{v}_{\rm P}}
+\newcommand{\v@tile@P}{\bm{v}^\prime_{\rm P}}
+\subsection{衝突判定}
+
+\begin{center}
+  \input{physics/marble_sphere.tex}
+\end{center}
+
+ビー玉の衝突判定の流れ
+
+\begin{enumerate}
+  \item \sec@collision@flow{1} (\ref{sec:collision-flow-1})
+  \item \sec@collision@flow{2} (\ref{sec:collision-flow-2})
+  \item \sec@collision@flow{3} (\ref{sec:collision-flow-3})
+  \item \sec@collision@flow{4} (\ref{sec:collision-flow-4})
+  \item \sec@collision@flow{5} (\ref{sec:collision-flow-5})
+\end{enumerate}
+
+それぞれについて見ていく．
+
+\input{physics/collision-flow/1.tex}
+\input{physics/collision-flow/2.tex}
+
+
+
+\subsubsection{\sec@collision@flow{3}}
+\label{sec:collision-flow-3}
+
+\subsubsection{\sec@collision@flow{4}}
+\label{sec:collision-flow-4}
+
+\subsubsection{\sec@collision@flow{5}}
+\label{sec:collision-flow-5}
+
+\makeatother
+}

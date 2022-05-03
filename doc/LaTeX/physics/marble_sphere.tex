@@ -1,0 +1,130 @@
+% physics/marble_sphere.tex
+
+% 球を描画
+
+{%
+% \usetikzlibrary{intersections,calc,arrows.meta}
+
+% 参考
+% https://tex.stackexchange.com/questions/348609/draw-a-3d-sphere-with-radius-with-tikz
+\begin{tikzpicture}
+  % 面
+  \coordinate (O) at (0,0); % 原点 O
+  \coordinate (L) at (-2,0); % 左
+  \coordinate (R) at (2,0); % 右
+  \coordinate (U) at (0,2); % 上
+  \coordinate (D) at (0,-2); % 下
+  \coordinate (vB) at (1,1); % 後ろ方向
+  \coordinate (vF) at (-1,-1); % 前方向
+
+  \draw[dashed, name path=arcB] (R) arc (0:180:2 and 0.6); % 後ろ曲線
+  \draw[black!0, name path=arcF] (L) arc (180:360:2 and 0.6); % 前曲線 (後ほど描画)
+
+  % Bを求める
+  \draw[black!0, name path=lineB] (O) -- (vB);
+  \path[name intersections={of= arcB and lineB, by={B}}];
+  
+  % Fを求める
+  \draw[black!0, name path=lineF] (O) -- (vF);
+  \path[name intersections={of= arcF and lineF, by={F}}];
+
+  % 頂点
+  \coordinate (C1) at ($(L)+(B)-(O)+(U)$); % 上左後ろ
+  \coordinate (C2) at ($(L)+(F)-(O)+(U)$); % 上左前
+  \coordinate (C3) at ($(R)+(F)-(O)+(U)$); % 上右前
+  \coordinate (C4) at ($(R)+(B)-(O)+(U)$); % 上右後ろ
+  \coordinate (C5) at ($(L)+(B)-(O)+(D)$); % 下左後ろ
+  \coordinate (C6) at ($(L)+(F)-(O)+(D)$); % 下左前
+  \coordinate (C7) at ($(R)+(F)-(O)+(D)$); % 下右前
+  \coordinate (C8) at ($(R)+(B)-(O)+(D)$); % 下右後ろ
+
+  % 辺
+  \coordinate (E1) at ($(L)+(B)-(O)$); % 左後ろ
+  \coordinate (E2) at ($(L)+(F)-(O)$); % 左前
+  \coordinate (E3) at ($(R)+(F)-(O)$); % 右前
+  \coordinate (E4) at ($(R)+(B)-(O)$); % 右後ろ
+
+  \coordinate (S1) at ($(L)+(U)$); % 
+  \coordinate (S2) at ($(R)+(U)$); % 
+  \coordinate (S3) at ($(R)+(D)$); % 
+  \coordinate (S4) at ($(L)+(D)$); % 
+
+  \coordinate (M1) at ($(B)+(U)$); % 
+  \coordinate (M2) at ($(F)+(U)$); % 
+  \coordinate (M3) at ($(F)+(D)$); % 
+  \coordinate (M4) at ($(B)+(D)$); % 
+
+
+  % 線の描画
+  \draw[dashed] (O) -- (R);
+  \draw[dashed] (O) -- (L);
+  \draw[dashed] (O) -- (U);
+  \draw[dashed] (O) -- (D);
+  \draw[dashed] (O) -- (B);
+  \draw[dashed] (O) -- (F);
+
+  \draw[ultra thin] (C1) -- (C2);
+  % \draw[ultra thin] (C2) -- (C3); % (後ほど描画)
+  \draw[ultra thin] (C3) -- (C4);
+  \draw[ultra thin] (C4) -- (C1);
+
+  \draw[ultra thin] (C5) -- (C6) -- (C7) -- (C8) -- cycle;
+
+  \draw[ultra thin] (C1) -- (C5);
+  \draw[ultra thin] (C2) -- (C6);
+  % \draw[ultra thin] (C3) -- (C7); % (後ほど描画)
+  \draw[ultra thin] (C4) -- (C8);
+  
+
+  % 点の描画
+  \fill (O) circle (0.06) node[above left]{O}; % 点O
+  \fill (L) circle (0.06) node[left]{L}; % 点L
+  \fill (R) circle (0.06) node[right]{R}; % 点R
+  \fill (U) circle (0.06) node[above]{U}; % 点U
+  \fill (D) circle (0.06) node[below]{D}; % 点D
+  \fill (B) circle (0.06) node[above right]{B}; % 点B
+
+  \fill (C1) circle (0.06) node[above left]{C$_1$}; % 点C1
+  \fill (C2) circle (0.06) node[left]{C$_2$}; % 点C2
+  % \fill (C3) circle (0.06) node[right]{C$_3$}; % 点C3 (後ほど描画)
+  \fill (C4) circle (0.06) node[above right]{C$_4$}; % 点C4
+
+  \fill (C5) circle (0.06) node[above left]{C$_5$}; % 点C5
+  \fill (C6) circle (0.06) node[below left]{C$_6$}; % 点C6
+  \fill (C7) circle (0.06) node[below right]{C$_7$}; % 点C7
+  \fill (C8) circle (0.06) node[above right]{C$_8$}; % 点C8
+
+  \fill (E1) circle (0.06) node[above left]{E$_1$}; % 点E1
+  \fill (E2) circle (0.06) node[below left]{E$_2$}; % 点E2
+  % \fill (E3) circle (0.06) node[below right]{E$_3$}; % 点E3 (後ほど描画)
+  \fill (E4) circle (0.06) node[above right]{E$_4$}; % 点E4
+
+  \fill (S1) circle (0.06) node[left]{S$_1$}; % 点S1
+  \fill (S2) circle (0.06) node[right]{S$_2$}; % 点S2
+  \fill (S3) circle (0.06) node[right]{S$_3$}; % 点S3
+  \fill (S4) circle (0.06) node[left]{S$_4$}; % 点S4
+
+  \fill (M1) circle (0.06) node[above]{M$_1$}; % 点M1
+  % \fill (M2) circle (0.06) node[above]{M$_2$}; % 点M2 (後ほど描画)
+  \fill (M3) circle (0.06) node[below]{M$_3$}; % 点M3
+  \fill (M4) circle (0.06) node[above right]{M$_4$}; % 点M4
+
+  % 球・影の描画
+  \shade[ball color = gray!10, opacity = 0.5] (O) circle (2cm);
+  \draw (O) circle (2cm);
+
+  % 影の上から描画するものたち
+
+  \draw (L) arc (180:360:2 and 0.6); % 前曲線 (描画)
+
+  \draw[ultra thin] (C2) -- (C3);
+  \draw[ultra thin] (C3) -- (C7);
+
+  \fill (F) circle (0.06) node[below left]{F}; % 点F
+  \fill (C3) circle (0.06) node[right]{C$_3$}; % 点C3
+  \fill (E3) circle (0.06) node[below right]{E$_3$}; % 点E3
+  \fill (M2) circle (0.06) node[above]{M$_2$}; % 点M2
+\end{tikzpicture}
+
+}
+

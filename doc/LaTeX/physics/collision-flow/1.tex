@@ -1,0 +1,31 @@
+% physics/collision-flow/1.tex
+
+{%
+\makeatletter
+
+\subsubsection{\sec@collision@flow{1}}
+\label{sec:collision-flow-1}
+
+タイルの(直交)座標系の基本ベクトルを \(\e@tile@x, \e@tile@y, \e@tile@z\)
+とおく．
+また，タイルの座標系の原点 \(\O@tile\) のワールドの座標系における位置ベクトルを
+\(\v@O@tile\) とする．
+
+ここで，ビー玉について，ビー玉のある点をPとし，
+ワールドの座標系における位置ベクトルを \(\v@P\)，
+タイルの座標系における位置ベクトルを \(\v@tile@P\)
+とする．
+
+このとき，\(\v@tile@P\) は \(\e@tile@x, \e@tile@y, \e@tile@z, \v@O@tile, \v@P\) を用いて
+\begin{align}
+  \v@tile@P =
+  \begin{pmatrix}
+    \e@tile@x & \e@tile@y & \e@tile@z
+  \end{pmatrix}^{-1}
+  (\v@P - \v@O@tile)
+\end{align}
+と表せる．
+
+\input{physics/collision-flow/1_tikzpicture.tex}
+
+}

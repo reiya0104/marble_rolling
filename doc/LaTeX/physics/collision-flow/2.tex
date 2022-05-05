@@ -1,6 +1,156 @@
 % physics/collision-flow/2.tex
 {%
+% ビー玉の各軸の最大最小の座標に基づくタイルの位置を抽出
 \subsubsection{\sec@collision@flow{2}}
 \label{sec:collision-flow-2}
 
+以下はタイルの座標系として考える．
+
+本題に入る前に，タイルの構成と，点とタイルの位置関係について述べる．
+
+\noindent
+{\bf タイルの構成}
+
+タイルは直方体でできており，下の図のように敷き詰められている．
+ここで， \(s = \verb|TILE_SHORT_WIDTH|, \,
+l = \verb|TILE_LONG_WIDTH|\) とする．
+
+\input{physics/collision-flow/2_tikzpicture.tex}
+
+この図のように，
+\(\x@tile, \y@tile, \z@tile\) 軸のそれぞれの方向における \(i, j, k\) 番目(\(i, j, k = 0, 1, 2, \dots\))のタイルは，
+
+\begin{align}
+  \label{eq:tile-aria}
+  \begin{alignedat}{9}
+    &\x@tile \, \text{軸:} &\quad & 
+    &\biggl\lfloor \frac{i + 1}{2} \biggr\rfloor \, & s + & \biggl\lfloor \frac{i}{2} \biggr\rfloor \, & l
+    && \le \x@tile
+    < & \biggl\lfloor \frac{i + 2}{2} \biggr\rfloor \, & s + & \biggl\lfloor \frac{i + 1}{2} \biggr\rfloor \, & l \\
+    &\y@tile \, \text{軸:} & & 
+    &\biggl\lfloor \frac{j - 1}{2} \biggr\rfloor \, & s + & \biggl\lfloor \frac{j}{2} \biggr\rfloor \, & l
+    && \le \y@tile
+    < & \biggl\lfloor \frac{j}{2} \biggr\rfloor \, & s + & \biggl\lfloor \frac{j + 1}{2} \biggr\rfloor \, & l \\
+    &\z@tile \, \text{軸:} & & 
+    &\biggl\lfloor \frac{k + 1}{2} \biggr\rfloor \, & s + & \biggl\lfloor \frac{k}{2} \biggr\rfloor \, & l
+    && \le \z@tile
+    < & \biggl\lfloor \frac{k + 2}{2} \biggr\rfloor \, & s + & \biggl\lfloor \frac{k + 1}{2} \biggr\rfloor \, & l
+  \end{alignedat}
+\end{align}
+
+の領域に配置される．
+ここで，
+\(\lfloor x \rfloor\) は \(n \le x < n + 1\) となる整数 \(n\) のことである．
+今後，この領域にあるタイルのことを \([i, j, k]\) と表すとする．
+
+例えば， \([1, 2, 3]\) は，
+\(( s \le \x@tile < s + l \ \text{かつ} \ s \le \y@tile < s + l \ \text{かつ} \ 2 \, s + l \le \z@tile < 2 \, s + 2 \, l )\)
+という領域のタイルを表す．
+
+\noindent
+{\bf 点とタイルの位置関係}
+
+このようなタイルの構成について，ある点P \((a, b, c)\) がどのタイル \([i, j, k]\) に含まれているのかを考えたい．
+これは，上の 式\eqref{eq:tile-aria} から逆算すると，
+\(i, j, k\) はそれぞれ
+
+\begin{align}
+  \begin{aligned}
+    i &= 2 \biggl\lfloor \frac{a}{s + l} \biggr\rfloor
+      + \biggl\lfloor \frac{a - s}{s + l} - \biggl\lfloor \frac{a}{s + l} \biggr\rfloor \biggr\rfloor
+      + 1 \eqqcolon f_i(a) \\
+    j &= 2 \biggl\lfloor \frac{b + s}{s + l} \biggr\rfloor
+      + \biggl\lfloor \frac{b}{s + l} - \biggl\lfloor \frac{b + s}{s + l} \biggr\rfloor \biggr\rfloor
+      + 1 \eqqcolon f_j(b) \\
+    k &= 2 \biggl\lfloor \frac{c}{s + l} \biggr\rfloor
+      + \biggl\lfloor \frac{c - s}{s + l} - \biggl\lfloor \frac{c}{s + l} \biggr\rfloor \biggr\rfloor
+      + 1 \eqqcolon f_k(c)
+  \end{aligned}
+\end{align}
+となる．
+このように，点P \((a, b, c)\) からその点を含むタイル \([i, j, k]\)
+を返す関数を
+\begin{align}
+  \label{eq:get-coordinates}
+  f((a, b, c)) = [f_i(a), f_j(b), f_k(c)]
+\end{align}
+とする．
+
+求め方:
+\begin{quotation}
+  \(i\) を求める．\(i\) は0以上の整数であるから，
+  ある非負整数 \(n\) を用いて
+  \(i = 2 n \, \text{または} \, i = 2 (n + 1)\) と表せる．
+  このとき，式\eqref{eq:tile-aria} の \(\x@tile\) の範囲はそれぞれ
+  \begin{alignat*}{3}
+    &i = 2 n \text{のとき}: & n (s + l) &\le \x@tile < n (s + l) + s \\
+    &i = 2 n + 1 \text{のとき}: \quad & n (s + l) + s &\le \x@tile < (n + 1) (s + l)
+  \end{alignat*}
+  となる．各辺を \(s + l\) で割ると，\(s + l > 0\) から，
+  \begin{alignat*}{3}
+    &i = 2 n \text{のとき}: & n &\le \frac{\x@tile}{s + l} < n + \frac{s}{s + l} \\
+    &i = 2 n + 1 \text{のとき}: \quad & n + \frac{s}{s + l} &\le \frac{\x@tile}{s + l} < n + 1
+  \end{alignat*}
+  がいえる．これより，\(a\) について
+  \(n^\prime \le \frac{a}{s + l} < n^\prime + \frac{s}{s + l}\)
+  を満たすような非負整数 \(n^\prime\) が存在すれば，
+  この \(n^\prime\) について \(i = 2 n^\prime\) が成り立ち，
+  \(n^\prime + \frac{s}{s + l} \le \frac{a}{s + l} < n^\prime + 1\)
+  を満たすような非負整数 \(n^\prime\) が存在すれば，
+  この \(n^\prime\) について \(i = 2 n^\prime + 1\) が成り立つ．
+  任意の \(a\) と \(n^\prime\) について \(\frac{a}{s + l} < n^\prime + \frac{s}{s + l} \le \frac{a}{s + l}\)
+  は成立しないので，
+  上の二つはどちらかしか成り立たない．
+
+  \(m \coloneqq \bigl\lfloor \frac{a}{s + l} \bigr\rfloor\)
+  とすると，\( m \le \frac{a}{s + l} < m + 1\) より，
+  \(n^\prime = m\) である．
+  このとき，
+  \begin{gather*}
+    i = 2 m + g(a)\\
+    \left(
+    \text{ここで，} \, g(a) = \left\{\,\begin{alignedat}{3}
+      &0 \quad \Bigl( (m \le ) &&\frac{a}{s + l} < m + \frac{s}{s + l} \, \text{のとき}\Bigr)\\
+      &1 \quad \Bigl( (m + 1 > ) &&\frac{a}{s + l} \ge m + \frac{s}{s + l} \, \text{のとき}\Bigr)
+    \end{alignedat}
+    \right.
+    \right)
+  \end{gather*}
+  が成り立つ．
+  \(g(a)\) は複数の表示があるが，ここではガウス記号(床関数)を用いると\\
+  \(g(a) = \bigl\lfloor \frac{a}{s + l} - \bigl(m + \frac{s}{s + l} \bigr)\bigr\rfloor + 1
+  = \bigl\lfloor \frac{a - s}{s + l} - m \bigr\rfloor + 1\)
+  と表せる．
+  よって，
+  \(i = 2 \bigl\lfloor \frac{a}{s + l} \bigr\rfloor
+  + \bigl\lfloor \frac{a - s}{s + l} - \bigl\lfloor \frac{a}{s + l} \bigr\rfloor \bigr\rfloor
+  + 1\)
+  となる．\(j, k\) についても同様にして求められる．
+\end{quotation}
+
+\vskip\baselineskip
+
+ここから本題に入る．
+ビー玉の半径を \(r\) とし，
+ビー玉の中心がタイルの座標系において \((a, b, c)\)
+の位置にあるとする．
+
+このとき，各軸の最大最小の座標に基づくタイルの位置を求める．
+\(\x@tile\) 軸における最大・最小値はそれぞれ
+\(a + r, a - r\) である．
+同様に，\(\y@tile\) 軸では \(b + r, b - r\)，
+\(\z@tile\) 軸では \(c + r, c - r\) である．
+これより，求めるタイルは
+\begin{gather*}
+  T_1 \coloneqq f((a - r, b - r, c - r)), \quad
+  T_2 \coloneqq f((a + r, b - r, c - r)), \\
+  T_3 \coloneqq f((a - r, b + r, c - r)), \quad
+  T_4 \coloneqq f((a + r, b + r, c - r)), \\
+  T_5 \coloneqq f((a - r, b - r, c + r)), \quad
+  T_6 \coloneqq f((a + r, b - r, c + r)), \\
+  T_7 \coloneqq f((a - r, b + r, c + r)), \quad
+  T_8 \coloneqq f((a + r, b + r, c + r))
+\end{gather*}
+の8つである．ここで， \(f\) は式\eqref{eq:get-coordinates}
+の \(f\) である．
 }

@@ -1,0 +1,117 @@
+% physics/collision-flow/2_tikzpicture.tex
+{%
+
+% xyz軸の長さ
+\newcommand{\@size@x}{7.5}
+\newcommand{\@size@y}{3}
+\newcommand{\@size@z}{3.5}
+
+\newcommand{\s@length}{0.8}
+\newcommand{\l@length}{2.0}
+
+\newcommand{\max@i}{4}
+\newcommand{\max@j}{1}
+\newcommand{\max@k}{1}
+
+\begin{center}
+  \begin{tikzpicture}
+    % 点
+    % ワールド座標系
+    \coordinate (O_tile) at (0,0);
+    \coordinate (e_tile_x) at (1,0);
+    \coordinate (e_tile_y) at (0,1);
+    \coordinate (e_tile_z) at ($5/6*(-1/2,{-sqrt(3)/2})$);
+    \coordinate (O_tile_draw) at ($(O_tile)+(0, -\s@length)$);
+
+    % 座標系の描画
+    \fill (O_tile) circle (0.06) node[below right]{$\O@tile$};
+    \draw[->,>=stealth,very thick] (O_tile)--($\@size@x*(e_tile_x)$)node[above]{$\x@tile$}; % x座標
+    \draw[->,>=stealth,very thick] (O_tile)--($\@size@y*(e_tile_y)$)node[left]{$\y@tile$}; % y座標
+    \draw[->,>=stealth,very thick] (O_tile)--($\@size@z*(e_tile_z)$)node[below]{$\z@tile$}; % z座標
+    
+    \tikzmath{%
+      \max@x@cood = div(\max@i+2,2)*\s@length+div(\max@i+1,2)*\l@length;
+      \max@y@cood = div(\max@j+2,2)*\s@length+div(\max@j+1,2)*\l@length;
+      \max@z@cood = div(\max@k+2,2)*\s@length+div(\max@k+1,2)*\l@length;
+    }
+    \draw[dotted] ($(O_tile)+(0, -\s@length)$)--($(O_tile)+(0, -\s@length)+\@size@x*(e_tile_x)$);
+    \draw[dotted] ($(O_tile)+(0, -\s@length)$)--($(O_tile)+(0, -\s@length)+\@size@y*(e_tile_y)$);
+    \draw[dotted] ($(O_tile)+(0, -\s@length)$)--($(O_tile)+(0, -\s@length)+\@size@z*(e_tile_z)$);
+    % 繰り返し
+    \foreach \i in {0, ..., \max@i}
+    {%
+      \foreach \j in {0, ..., \max@j}
+      {%
+        \foreach \k in {0, ..., \max@k}
+        {%
+          % タイルの枠組みの描画 
+          \tikzmath{%
+            \tile@x = div(\i+1,2)*\s@length+div(\i,2)*\l@length;
+            \tile@y = div(\j+1,2)*\s@length+div(\j,2)*\l@length;
+            \tile@z = div(\k+1,2)*\s@length+div(\k,2)*\l@length;
+            %
+            \tile@next@x = div(\i+2,2)*\s@length+div(\i+1,2)*\l@length;
+            \tile@next@y = div(\j+2,2)*\s@length+div(\j+1,2)*\l@length;
+            \tile@next@z = div(\k+2,2)*\s@length+div(\k+1,2)*\l@length;
+            %
+            % 表示する用の値
+            \tile@node@x@s@count = div(\i+2,2);
+            \tile@node@x@l@count = div(\i+1,2);
+            \tile@node@y@s@count = div(\j,2);
+            \tile@node@y@l@count = div(\j+1,2);
+            \tile@node@z@s@count = div(\k+2,2);
+            \tile@node@z@l@count = div(\k+1,2);
+          }
+
+          % タイルの影の描画
+          \ifthenelse{\(\j=0 \AND \k=1\) \OR \(\j=0 \AND \i=3\)}{
+            \shade ($(O_tile_draw)+\tile@next@x*(e_tile_x)+\tile@next@y*(e_tile_y)+\tile@z*(e_tile_z)$)
+              --($(O_tile_draw)+\tile@next@x*(e_tile_x)+\tile@next@y*(e_tile_y)+\tile@next@z*(e_tile_z)$)
+              --($(O_tile_draw)+\tile@next@x*(e_tile_x)+\tile@y*(e_tile_y)+\tile@next@z*(e_tile_z)$)
+              --($(O_tile_draw)+\tile@next@x*(e_tile_x)+\tile@y*(e_tile_y)+\tile@z*(e_tile_z)$)
+              --cycle;
+            \shade ($(O_tile_draw)+\tile@next@x*(e_tile_x)+\tile@next@y*(e_tile_y)+\tile@z*(e_tile_z)$)
+              --($(O_tile_draw)+\tile@next@x*(e_tile_x)+\tile@next@y*(e_tile_y)+\tile@next@z*(e_tile_z)$)
+              --($(O_tile_draw)+\tile@x*(e_tile_x)+\tile@next@y*(e_tile_y)+\tile@next@z*(e_tile_z)$)
+              --($(O_tile_draw)+\tile@x*(e_tile_x)+\tile@next@y*(e_tile_y)+\tile@z*(e_tile_z)$)
+              --cycle;
+            \shade ($(O_tile_draw)+\tile@x*(e_tile_x)+\tile@next@y*(e_tile_y)+\tile@next@z*(e_tile_z)$)
+              --($(O_tile_draw)+\tile@next@x*(e_tile_x)+\tile@next@y*(e_tile_y)+\tile@next@z*(e_tile_z)$)
+              --($(O_tile_draw)+\tile@next@x*(e_tile_x)+\tile@y*(e_tile_y)+\tile@next@z*(e_tile_z)$)
+              --($(O_tile_draw)+\tile@x*(e_tile_x)+\tile@y*(e_tile_y)+\tile@next@z*(e_tile_z)$)
+              --cycle;
+          }{};
+
+          \ifthenelse{\j=0 \AND \k=0}{
+            \draw[dotted] ($(O_tile_draw)+\tile@next@x*(e_tile_x)+\@size@y*(e_tile_y)$)
+              --($(O_tile_draw)+\tile@next@x*(e_tile_x)$)
+              --($(O_tile_draw)+\tile@next@x*(e_tile_x)+\@size@z*(e_tile_z)$);
+              \fill($(O_tile)+\tile@next@x*(e_tile_x)$) circle (0.06) node[%
+              \ifodd\i below\else above\fi
+              ]{$\tile@node@x@s@count \, s + \tile@node@x@l@count \, l$};
+          }{};
+          \ifthenelse{\k=0 \AND \i=0}{
+            \draw[dotted] ($(O_tile_draw)+\tile@next@y*(e_tile_y)+\@size@z*(e_tile_z)$)
+              --($(O_tile_draw)+\tile@next@y*(e_tile_y)$)
+              --($(O_tile_draw)+\tile@next@y*(e_tile_y)+\@size@x*(e_tile_x)$);
+            \fill($(O_tile_draw)+\tile@next@y*(e_tile_y)$) circle (0.06) node[left]{$\tile@node@y@s@count \, s + \tile@node@y@l@count \, l$};
+          }{};
+          \ifthenelse{\i=0 \AND \j=0}{
+            \draw[dotted] ($(O_tile_draw)+\tile@next@z*(e_tile_z)+\@size@x*(e_tile_x)$)
+              --($(O_tile_draw)+\tile@next@z*(e_tile_z)$)
+              --($(O_tile_draw)+\tile@next@z*(e_tile_z)+\@size@y*(e_tile_y)$);
+            \fill($(O_tile)+\tile@next@z*(e_tile_z)$) circle (0.06) node[left]{$\tile@node@z@s@count \, s + \tile@node@z@l@count \, l$};
+          }{};
+          \draw[dotted] ($(O_tile_draw)+\tile@next@x*(e_tile_x)+\tile@next@y*(e_tile_y)+\tile@z*(e_tile_z)$)
+            --($(O_tile_draw)+\tile@next@x*(e_tile_x)+\tile@next@y*(e_tile_y)+\tile@next@z*(e_tile_z)$)
+            --($(O_tile_draw)+\tile@next@x*(e_tile_x)+\tile@y*(e_tile_y)+\tile@next@z*(e_tile_z)$);
+          
+          \draw[dotted] ($(O_tile_draw)+\tile@x*(e_tile_x)+\tile@next@y*(e_tile_y)+\tile@next@z*(e_tile_z)$)
+            --($(O_tile_draw)+\tile@next@x*(e_tile_x)+\tile@next@y*(e_tile_y)+\tile@next@z*(e_tile_z)$);
+          
+        }
+      }
+    }
+  \end{tikzpicture}
+\end{center}
+}

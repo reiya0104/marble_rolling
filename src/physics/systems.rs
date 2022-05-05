@@ -17,13 +17,9 @@ fn get_coordinate(a: f32) -> usize {
 fn get_coordinates(vec3: Vec3) -> IVec3 {
     let s = TILE_SHORT_WIDTH;
     let l = TILE_LONG_WIDTH;
-    let v1 = (vec3 / (s + l)).floor();
-    let v2 = IVec3::new(
-        if vec3.x < (s + l) * v1.x + s { 0 } else { 1 },
-        if vec3.y < (s + l) * v1.y + l { 1 } else { 2 },
-        if vec3.z < (s + l) * v1.z + s { 0 } else { 1 },
-    );
-    2 * v1.as_ivec3() + v2
+    let v1 = (vec3 + Vec3::new(0.0, s, 0.0)) / (s + l);
+    let v2 = v1 - Vec3::splat(s / (s + l)) - v1.floor();
+    2 * v1.floor().as_ivec3() + v2.floor().as_ivec3() + IVec3::splat(1)
 }
 
 fn get_relative_position(

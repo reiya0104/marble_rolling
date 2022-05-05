@@ -3,12 +3,13 @@
 {%
 \makeatletter
 
+% 章タイトル
 \newcommand{\sec@collision@flow}[1]{%
   \stringcases
     {#1}%
     {%
       {1}{ビー玉の位置をタイルの座標系に変換}%
-      {2}{ビー玉のxyz軸それぞれの最大最小の座標に基づくタイルの位置を抽出}%
+      {2}{ビー玉の各軸の最大最小の座標に基づくタイルの位置を抽出}%
       {3}{抽出された8つのタイルの位置とその間のタイルの位置についてタイルが存在するものを取り出す}%
       {4}{存在するタイルについてそのタイルとビー玉との距離を計算}%
       {5}{距離がビー玉の半径よりも小さかったら衝突してると判定}%
@@ -28,6 +29,9 @@
 \newcommand{\e@tile@z}{\e@tile_z}
 
 \newcommand{\O@tile}{{\rm O}^\prime}
+\newcommand{\x@tile}{x^\prime}
+\newcommand{\y@tile}{y^\prime}
+\newcommand{\z@tile}{z^\prime}
 
 \newcommand{\v@O@tile}{\bm{v}_{\O@tile}}
 

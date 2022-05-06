@@ -55,6 +55,7 @@ l = \verb|TILE_LONG_WIDTH|\) とする．
 \(i, j, k\) はそれぞれ
 
 \begin{align}
+  \label{eq:get-tile-ijk}
   \begin{aligned}
     i &= 2 \biggl\lfloor \frac{a}{s + l} \biggr\rfloor
       + \biggl\lfloor \frac{a - s}{s + l} - \biggl\lfloor \frac{a}{s + l} \biggr\rfloor \biggr\rfloor
@@ -68,13 +69,6 @@ l = \verb|TILE_LONG_WIDTH|\) とする．
   \end{aligned}
 \end{align}
 となる．
-このように，点P \((a, b, c)\) からその点を含むタイル \([i, j, k]\)
-を返す関数を
-\begin{align}
-  \label{eq:get-coordinates}
-  f((a, b, c)) = [f_i(a), f_j(b), f_k(c)]
-\end{align}
-とする．
 
 求め方:
 \begin{quotation}
@@ -140,17 +134,26 @@ l = \verb|TILE_LONG_WIDTH|\) とする．
 \(a + r, a - r\) である．
 同様に，\(\y@tile\) 軸では \(b + r, b - r\)，
 \(\z@tile\) 軸では \(c + r, c - r\) である．
-これより，求めるタイルは
+ここで， 式 \eqref{eq:get-tile-ijk} の \(f_i, f_j, f_k\) を用いて
+\begin{align}
+  \begin{gathered}
+    i_- \coloneqq f_i(a - r), \quad i_+ \coloneqq f_i(a + r), \\
+    j_- \coloneqq f_j(b - r), \quad j_+ \coloneqq f_j(b + r), \\
+    k_- \coloneqq f_k(c - r), \quad k_+ \coloneqq f_k(c + r)
+  \end{gathered}
+\end{align}
+とすると，求めるタイルは
 \begin{gather*}
-  T_1 \coloneqq f((a - r, b - r, c - r)), \quad
-  T_2 \coloneqq f((a + r, b - r, c - r)), \\
-  T_3 \coloneqq f((a - r, b + r, c - r)), \quad
-  T_4 \coloneqq f((a + r, b + r, c - r)), \\
-  T_5 \coloneqq f((a - r, b - r, c + r)), \quad
-  T_6 \coloneqq f((a + r, b - r, c + r)), \\
-  T_7 \coloneqq f((a - r, b + r, c + r)), \quad
-  T_8 \coloneqq f((a + r, b + r, c + r))
+  T_1 \coloneqq [i_-, j_-, k_-], \quad
+  T_2 \coloneqq [i_+, j_-, k_-], \quad
+  T_3 \coloneqq [i_-, j_+, k_-], \quad
+  T_4 \coloneqq [i_+, j_+, k_-], \\
+  T_5 \coloneqq [i_-, j_-, k_+], \quad
+  T_6 \coloneqq [i_+, j_-, k_+], \quad
+  T_7 \coloneqq [i_-, j_+, k_+], \quad
+  T_8 \coloneqq [i_+, j_+, k_+]
 \end{gather*}
-の8つである．ここで， \(f\) は式\eqref{eq:get-coordinates}
-の \(f\) である．
+の8つである．
+
+
 }

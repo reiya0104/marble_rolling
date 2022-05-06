@@ -1,0 +1,20 @@
+% physics/collision-flow/3.tex
+{%
+% 抽出された8つのタイルの位置とその間のタイルの位置についてタイルが存在するものを取り出す
+\subsubsection{\sec@collision@flow{3}}
+\label{sec:collision-flow-3}
+
+前節 \ref{sec:collision-flow-2} のタイル \(T_\lambda \, (\lambda = 1, \dots, 8)\)
+について，そのタイルらに囲まれた(\(T_\lambda\) を含む)タイルの集合は，
+\(S \coloneqq \{[i, j, k] \mid
+  i_- \le i \le i_+, \, 
+  j_- \le j \le j_+, \, 
+  k_- \le k \le k_+ \}\)
+と表せる．
+このうち，タイルが存在するものは，
+\(\{ [i, j, k] | [i, j, k] \in S, \, \verb|tile_state|[i][j][k] = 1\}\)
+である．
+ここで，
+\verb|tile_state| は
+ファイル \verb|src/resources.rs| (変更の可能性あり)
+の \verb|TileState| のインスタンスである．

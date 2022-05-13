@@ -41,11 +41,16 @@ l = \verb|TILE_LONG_WIDTH|\) とする．
 の領域に配置される．
 ここで，
 \(\lfloor x \rfloor\) は \(n \le x < n + 1\) となる整数 \(n\) のことである．
-今後，この領域にあるタイルのことを \([i, j, k]\) と表すとする．
+今後，この領域にあるタイルのことを \([i, j, k]\) と表し，
+この各軸の範囲をそれぞれ \(X^\prime_{[i, j, k]}, Y^\prime_{[i, j, k]}, Z^\prime_{[i, j, k]}\) と表すとする．
 
 例えば， \([1, 2, 3]\) は，
 \(( s \le \x@tile < s + l \ \text{かつ} \ s \le \y@tile < s + l \ \text{かつ} \ 2 \, s + l \le \z@tile < 2 \, s + 2 \, l )\)
-という領域のタイルを表す．
+という領域のタイルを表し，
+\(X^\prime_{[1, 2, 3]} = [s, s + l), \, 
+  Y^\prime_{[1, 2, 3]} = [s, s + l), \,
+  Z^\prime_{[1, 2, 3]} = [2 s + l, 2 s + 2 l)\)
+である．
 
 \noindent
 {\bf 点とタイルの位置関係}
@@ -59,13 +64,13 @@ l = \verb|TILE_LONG_WIDTH|\) とする．
   \begin{aligned}
     i &= 2 \biggl\lfloor \frac{a}{s + l} \biggr\rfloor
       + \biggl\lfloor \frac{a - s}{s + l} - \biggl\lfloor \frac{a}{s + l} \biggr\rfloor \biggr\rfloor
-      + 1 \eqqcolon f_i(a) \\
+      + 1 \eqqcolon f_{\x@tile}(a) \\
     j &= 2 \biggl\lfloor \frac{b + s}{s + l} \biggr\rfloor
       + \biggl\lfloor \frac{b}{s + l} - \biggl\lfloor \frac{b + s}{s + l} \biggr\rfloor \biggr\rfloor
-      + 1 \eqqcolon f_j(b) \\
+      + 1 \eqqcolon f_{\y@tile}(b) \\
     k &= 2 \biggl\lfloor \frac{c}{s + l} \biggr\rfloor
       + \biggl\lfloor \frac{c - s}{s + l} - \biggl\lfloor \frac{c}{s + l} \biggr\rfloor \biggr\rfloor
-      + 1 \eqqcolon f_k(c)
+      + 1 \eqqcolon f_{\z@tile}(c)
   \end{aligned}
 \end{align}
 となる．
@@ -134,12 +139,12 @@ l = \verb|TILE_LONG_WIDTH|\) とする．
 \(a + r, a - r\) である．
 同様に，\(\y@tile\) 軸では \(b + r, b - r\)，
 \(\z@tile\) 軸では \(c + r, c - r\) である．
-ここで， 式 \eqref{eq:get-tile-ijk} の \(f_i, f_j, f_k\) を用いて
+ここで， 式 \eqref{eq:get-tile-ijk} の \(f_{\x@tile}, f_{\y@tile}, f_{\z@tile}\) を用いて
 \begin{align}
   \begin{gathered}
-    i_- \coloneqq f_i(a - r), \quad i_+ \coloneqq f_i(a + r), \\
-    j_- \coloneqq f_j(b - r), \quad j_+ \coloneqq f_j(b + r), \\
-    k_- \coloneqq f_k(c - r), \quad k_+ \coloneqq f_k(c + r)
+    i_- \coloneqq f_{\x@tile}(a - r), \quad i_+ \coloneqq f_{\x@tile}(a + r), \\
+    j_- \coloneqq f_{\y@tile}(b - r), \quad j_+ \coloneqq f_{\y@tile}(b + r), \\
+    k_- \coloneqq f_{\z@tile}(c - r), \quad k_+ \coloneqq f_{\z@tile}(c + r)
   \end{gathered}
 \end{align}
 とすると，求めるタイルは

@@ -10,7 +10,7 @@
 \usetikzlibrary{math}
 
 \usepackage{xcolor}
-\usepackage{amsmath,amssymb}
+\usepackage{amsmath,amssymb,amsthm}
 \usepackage{ascmac}
 \usepackage{enumerate}
 \usepackage{url}
@@ -21,6 +21,15 @@
 \usepackage{multirow}
 \usepackage{mathtools}
 \usepackage{ifthen}
+
+% amsthm
+\theoremstyle{plain}
+\newtheorem{thm}{Theorem}[section]
+\newtheorem*{thm*}{定理}
+
+\theoremstyle{definition}
+\newtheorem{dfn}[thm]{定義}
+
 
 % 条件分岐
 % 参考: https://tex.stackexchange.com/questions/64131/implementing-switch-cases

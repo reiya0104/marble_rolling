@@ -5,9 +5,8 @@
 \label{sec:collision-flow-4}
 
 \begin{dfn}
-  について．
-  あるタイルの表面全体の集合を \(S_{\text{タイル}}\)， 
-  ビー玉の表面全体の集合を \(S_{\text{ビー玉}}\) とおく．
+  あるタイルの境界の集合を \(S_{\text{タイル}}\)， 
+  ビー玉の境界の集合を \(S_{\text{ビー玉}}\) とおく．
   このとき，タイルとビー玉の {\bf 距離} \(d\)
   を，
   \[d = \min\{ |p - q| \mid p \in S_{\text{タイル}}, q \in S_{\text{ビー玉}} \}\]
@@ -27,15 +26,15 @@
 におけるタイルが存在する範囲の下限と上限をそれぞれ
 \begin{align*}
   &\x@tile_- \coloneqq \inf \bigl( X^\prime_{[i, j, k]} \bigr)
-  = \biggl\lfloor \frac{i + 1}{2} \biggr\rfloor \, s + \biggl\lfloor \frac{i}{2} \biggr\rfloor , \quad
+  = \biggl\lfloor \frac{i + 1}{2} \biggr\rfloor \, s + \biggl\lfloor \frac{i}{2} \biggr\rfloor  \, l, \quad
   \x@tile_+\coloneqq \sup \bigl( X^\prime_{[i, j, k]} \bigr)
   = \biggl\lfloor \frac{i + 2}{2} \biggr\rfloor \, s + \biggl\lfloor \frac{i + 1}{2} \biggr\rfloor \, l \\
   &\y@tile_- \coloneqq \inf \bigl( Y^\prime_{[i, j, k]} \bigr)
-  = \biggl\lfloor \frac{j - 1}{2} \biggr\rfloor \, s + \biggl\lfloor \frac{j}{2} \biggr\rfloor , \quad
+  = \biggl\lfloor \frac{j - 1}{2} \biggr\rfloor \, s + \biggl\lfloor \frac{j}{2} \biggr\rfloor  \, l, \quad
   \y@tile_+\coloneqq \sup \bigl( Y^\prime_{[i, j, k]} \bigr)
   = \biggl\lfloor \frac{j}{2} \biggr\rfloor \, s + \biggl\lfloor \frac{j + 1}{2} \biggr\rfloor \, l \\
   &\z@tile_- \coloneqq \inf \bigl( Z^\prime_{[i, j, k]} \bigr)
-  = \biggl\lfloor \frac{k + 1}{2} \biggr\rfloor \, s + \biggl\lfloor \frac{k}{2} \biggr\rfloor , \quad
+  = \biggl\lfloor \frac{k + 1}{2} \biggr\rfloor \, s + \biggl\lfloor \frac{k}{2} \biggr\rfloor  \, l, \quad
   \z@tile_+\coloneqq \sup \bigl( Z^\prime_{[i, j, k]} \bigr)
   = \biggl\lfloor \frac{k + 2}{2} \biggr\rfloor \, s + \biggl\lfloor \frac{k + 1}{2} \biggr\rfloor \, l
 \end{align*}

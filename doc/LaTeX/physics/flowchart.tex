@@ -29,7 +29,7 @@
     \node[Process, text width=4cm, below=3.0 of MS.center](Collision){衝突応答};
     \draw[->, thick] (MS)node[left, yshift=-70]{Collision(衝突)} -- (Collision);
     \node[Process, text width=4cm, below right=3.0 and 3.0 of MS.center](Contact){接触応答};
-    \draw[->, thick] (0, -12.5)node[above, xshift=140]{Contact(接触))}  -| (Contact);
+    \draw[->, thick] (0, -12.5)node[above, xshift=140]{Contact(接触)}  -| (Contact);
     \node[Process, text width=4cm, below=2.5 of Collision.center](D){描画};
     \draw[->, thick] (0, -12.5)node[above, xshift=-140]{Float(衝突・接触なし)}  -| (-5, -15.5) |- (0, -15.5);
     \draw[->, thick] (Collision) -- (D);

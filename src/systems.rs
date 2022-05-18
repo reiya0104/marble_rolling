@@ -246,3 +246,40 @@ pub(crate) fn reset_force(mut query: Query<(&mut Force, &Mass), With<Marble>>) {
         force.vec3 = Vec3::new(0.0, -mass.mass * gravity, 0.0);
     }
 }
+
+// apple つくる
+// スペースが押されたら、りんごを生成
+pub(crate) fn create_apple(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    input: Res<Input<KeyCode>>,
+    // mut meshes: ResMut<Assets<Mesh>>,
+    // mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    if input.pressed(KeyCode::Space) {
+        // apple
+        let gravity = GRAVITY / 10.0;
+        let apple_position = Position::new(0.0, 4.0, 0.0);
+        let apple_mass = Mass::new(1.0);
+        let apple_force = Force::new(0.0, -apple_mass.mass * gravity, 0.0);
+        let apple_velocity = Velocity::default();
+
+        let apple_gltf = asset_server.load("models/apple.glb#Scene0");
+
+        commands
+            .spawn()
+            .insert(Apple)
+            .insert(apple_mass)
+            .insert(apple_force.clone())
+            .insert(apple_velocity.clone())
+            .insert(apple_position.clone())
+            .insert(ObjectView::from_position(apple_position.clone()))
+            .insert_bundle(TransformBundle {
+                local: apple_position.into(),
+                global: GlobalTransform::identity(),
+            })
+            .with_children(|parent| {
+                parent.spawn_scene(apple_gltf);
+            });
+    }
+}

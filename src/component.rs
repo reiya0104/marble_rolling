@@ -213,3 +213,6 @@ struct Item;
 
 #[derive(Debug, Component)]
 struct Enemy;
+
+#[derive(Debug, Component)]
+pub(crate) struct Apple;

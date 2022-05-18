@@ -101,7 +101,7 @@ fn is_collisioned(
         let d = get_distance(*marble_position, marble_radius, tile);
         println!("d = {:?}", d);
         if d <= 0.0 {
-            println!("{:?}", tile);
+            println!("{:?}, distance = {:?}", tile, d);
             tile_collisioned.tile_collisioned.push(tile);
         }
     }
@@ -119,7 +119,7 @@ pub(crate) fn collision_detection(
     for (position, radius) in query_marble.iter() {
         let relative_position =
             get_relative_position(&position.vec3, &tile_origin, &vec_x, &vec_y, &vec_z);
-  
+
         tile_collisioned.tile_collisioned.clear();
 
         is_collisioned(

@@ -58,6 +58,7 @@ fn main() {
                 .after("update_object_view_by_position"),
         )
         // .add_system(create_marble)
+        .add_system(create_apple)
         .add_system(
             ui::systems::update_mouse_coltroller_main_position
                 .label("update_mouse_coltroller_main_position"),
@@ -145,6 +146,15 @@ fn setup(
     mut materials: ResMut<Assets<StandardMaterial>>,
     asset_server: Res<AssetServer>,
 ) {
+    let apple_gltf = asset_server.load("models/apple.glb#Scene0");
+    commands
+        .spawn_bundle(TransformBundle {
+            local: Transform::from_xyz(2.0, 0.0, 0.0),
+            global: GlobalTransform::identity(),
+        })
+        .with_children(|parent| {
+            parent.spawn_scene(apple_gltf);
+        });
     // board
     // let rotation = Rotation::default();
     // let board_position = Position::default();
@@ -274,7 +284,7 @@ fn setup(
 
     commands.spawn().insert_bundle(PbrBundle {
         mesh: meshes.add(Mesh::from(shape::UVSphere {
-            radius: 0.05,
+            radius: 0.1,
             ..default()
         })),
         material: materials.add(StandardMaterial {
